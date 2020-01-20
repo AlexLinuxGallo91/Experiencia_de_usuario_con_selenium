@@ -18,7 +18,7 @@ class Temporizador:
             time.sleep(1) 
 
     @staticmethod
-    def reiniciar_segundos(self):
+    def reiniciar_segundos():
         Temporizador.segundos_transcurridos = 0
 
     @staticmethod
