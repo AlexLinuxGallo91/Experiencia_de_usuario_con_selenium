@@ -47,3 +47,20 @@ sudo tar -xf geckodriver-v0.26.0-linux64.tar.gz
 sudo pip3 install selenium
 
 ```
+Una vez finalizado la instalacion de dependencias, se podra acceder al ambiente desde la terminal con el comando 
+```
+vagrant ssh
+```
+o se puede conectar desde algun cliente SSH como puttyh con los siguientes datos
+```
+ip: 127.0.0.1
+user: vagrant
+password: vagrant
+```
+
+y podremos ejecutar con exito el script de experiencia de usuario desde la terminal (dentro de la carpeta del proyecto) con el siguiente comando:
+
+```
+python3 inicio.py
+```
+
