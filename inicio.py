@@ -22,14 +22,14 @@ driver = None
 path_web_driver = ''
 
 #ruta del webdriver de chrome
-path_web_driver = 'C:\webdrivers\chromedriver.exe'
+path_web_driver = "/usr/bin/webdrivers/geckodriver"
 
 #url exchange 2010 por probar
 url_exchange = "https://exchangeadministrado.com/owa"
 
 def iniciar_prueba(correo):
     carpetas_formateadas = []
-    driver = SeleniumTesting.inicializar_webdriver(path_web_driver)
+    driver = SeleniumTesting.inicializar_webdriver_firefox(path_web_driver)
     SeleniumTesting.navegar_a_sitio(driver, url_exchange)
     SeleniumTesting.iniciar_sesion_en_owa(driver, correo)
 

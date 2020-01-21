@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver import chrome
+from selenium.webdriver import Firefox
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 from correo import Correo
@@ -10,10 +11,24 @@ import time
 
 class SeleniumTesting:
 
+    # inicializa un nuevo driver (firefox) para la experiencia de usuario
+    # con el uso del navefador Mozilla Firefox
+    @staticmethod
+    def inicializar_webdriver_firefox(path_driver):
+        opciones_firefox = webdriver.FirefoxOptions()
+        
+        # ignora las certificaciones de seguridad, esto solamente se realiza
+        # para la experiencia de usuario
+        opciones_firefox.add_argument('--ignore-certificate-errors')
+        opciones_firefox.headless = True
+
+        return webdriver.Firefox(executable_path=path_driver, firefox_options=opciones_firefox)
+
+
     # inicializa un nuevo driver (chrome driver) para la experiencia de usuario
     # con el uso del navefador google chrome
     @staticmethod
-    def inicializar_webdriver(path_driver):
+    def inicializar_webdriver_chrome(path_driver):
         opciones_chrome = webdriver.ChromeOptions()
         
         # ignora las certificaciones de seguridad, esto solamente se realiza
@@ -50,6 +65,7 @@ class SeleniumTesting:
 
         # obtiene los elementos html para los campos de usuario, password y el boton de inicio de
         # sesion
+        time.sleep(2)
         input_usuario = driver.find_element_by_id('username')
         input_password = driver.find_element_by_id('password')
         boton_ingreso_correo = driver.find_element_by_xpath("//input[@type='submit'][@class='btn']")
@@ -122,7 +138,7 @@ class SeleniumTesting:
                 elemento_html_carpeta = driver
                 elemento_html_carpeta = driver.find_element_by_xpath('//span[@id="spnFldrNm"][@fldrnm="{}"]'.format(carpeta))
                 elemento_html_carpeta.click()
-                time.sleep(2)
+                time.sleep(3)
                 SeleniumTesting.verificar_dialogo_de_interrupcion(driver)
 
 
@@ -132,7 +148,7 @@ class SeleniumTesting:
     def verificar_dialogo_de_interrupcion(driver):
         if len(driver.find_elements_by_id('divPont')) > 0:
                 print('Se ha encontrado un dialogo informativo, se procede a cerrarlo')
-                time.sleep(2)
+                time.sleep(4)
                 boton_remover_dialogo = driver.find_element_by_id('imgX')
                 boton_remover_dialogo.click()
         
