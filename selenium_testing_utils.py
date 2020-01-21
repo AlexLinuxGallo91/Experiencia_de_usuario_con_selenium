@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 from correo import Correo
 from format_utils import FormatUtils
 from temporizador import Temporizador
+import mysql.connector
 import json
 import time
 
@@ -134,24 +135,31 @@ class SeleniumTesting:
                     return
 
                 print('Tiempo de navegacion de carpetas transcurrido: {}'.format(Temporizador.obtener_segundos_transcurridos()))
-                print('Ingresando a la carpeta: {}s'.format(carpeta))
+                print('Ingresando a la carpeta: {}'.format(carpeta))
+                time.sleep(1)
                 elemento_html_carpeta = driver
                 elemento_html_carpeta = driver.find_element_by_xpath('//span[@id="spnFldrNm"][@fldrnm="{}"]'.format(carpeta))
-                elemento_html_carpeta.click()
                 time.sleep(3)
                 SeleniumTesting.verificar_dialogo_de_interrupcion(driver)
-
-
+                elemento_html_carpeta.click()
+                
     # verifica que no aparezca el dialogo de interrupcion (dialogo informativo que en algunas ocasiones
     # aparece cuando se ingresa a una carpeta con correos nuevos)
     @staticmethod
     def verificar_dialogo_de_interrupcion(driver):
         if len(driver.find_elements_by_id('divPont')) > 0:
+                
                 print('Se ha encontrado un dialogo informativo, se procede a cerrarlo')
-                time.sleep(4)
-                boton_remover_dialogo = driver.find_element_by_id('imgX')
-                boton_remover_dialogo.click()
-        
+                
+                try:
+                    time.sleep(2)
+                    boton_remover_dialogo = driver.find_element_by_id('imgX')
+                    boton_remover_dialogo.click()
+                except ElementClickInterceptedException as e:
+                    print('Se encontro un dialogo informativo pero fue imposible cerrarlo.')
+                    print('Se intenta nuevamente el cierre del dialogo')
+                    SeleniumTesting.verificar_dialogo_de_interrupcion(driver)
+
         
     # Cierra la sesion desde el aplicativo y termina la sesion en el webdriver
     @staticmethod

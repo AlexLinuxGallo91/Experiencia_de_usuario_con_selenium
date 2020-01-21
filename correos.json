@@ -1,4 +1,9 @@
 {
-    "correos":[],
+    "correos":[
+        {"usuario":"mtydg1ds01db001@srv2010.vivetelmex.com", "password":"SUFiav+@92Lp0359@"},
+        {"usuario":"mtydg1ds01db002@srv2010.vivetelmex.com", "password":"SUFiav+@92Lp0359@"},
+        {"usuario":"mtydg1ds01db004@srv2010.vivetelmex.com", "password":"SUFiav+@92Lp0359@"},
+        {"usuario":"mtydg1ds01db005@srv2010.vivetelmex.com", "password":"SUFiav+@92Lp0359@"}
+    ],
     "correos_no_funcionales":[]
 }
