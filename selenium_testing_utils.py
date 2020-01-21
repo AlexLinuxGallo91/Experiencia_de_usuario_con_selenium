@@ -73,7 +73,7 @@ class SeleniumTesting:
 
         # ingresa los datos en cada uno de los inputs localizados en el sitio de owa, uno por
         # cada segundo
-        input_usuario.send_keys(correo.correo)
+        input_usuario.send_keys(correo.user)
         time.sleep(1)
         input_password.send_keys(correo.password)
         time.sleep(1)
@@ -136,19 +136,17 @@ class SeleniumTesting:
 
                 print('Tiempo de navegacion de carpetas transcurrido: {}'.format(Temporizador.obtener_segundos_transcurridos()))
                 print('Ingresando a la carpeta: {}'.format(carpeta))
-                time.sleep(1)
-                elemento_html_carpeta = driver
                 elemento_html_carpeta = driver.find_element_by_xpath('//span[@id="spnFldrNm"][@fldrnm="{}"]'.format(carpeta))
-                time.sleep(3)
+                time.sleep(4)
                 SeleniumTesting.verificar_dialogo_de_interrupcion(driver)
                 elemento_html_carpeta.click()
+                
                 
     # verifica que no aparezca el dialogo de interrupcion (dialogo informativo que en algunas ocasiones
     # aparece cuando se ingresa a una carpeta con correos nuevos)
     @staticmethod
     def verificar_dialogo_de_interrupcion(driver):
         if len(driver.find_elements_by_id('divPont')) > 0:
-                
                 print('Se ha encontrado un dialogo informativo, se procede a cerrarlo')
                 
                 try:

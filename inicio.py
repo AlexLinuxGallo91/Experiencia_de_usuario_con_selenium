@@ -2,6 +2,8 @@ from selenium.webdriver import chrome
 from selenium.webdriver.chrome import options
 from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
+from db_utils import DbUtils
+from itocaccount import ItocAccount
 from correo import Correo
 from temporizador import Temporizador
 from selenium_testing_utils import SeleniumTesting
@@ -51,9 +53,9 @@ def iniciar_prueba(correo):
 def main():
 
     # Se obtienen los correos a probar
-    lista_correos = SeleniumTesting.obtencion_usuarios_desde_archivo_json('correos.json')
+    lista_cuentas_correos = DbUtils.obtener_lista_cuentas_db()
 
-    for user_correo in lista_correos:
+    for user_correo in lista_cuentas_correos:
         iniciar_prueba(user_correo)
 
 # Ejecucion principal del Script

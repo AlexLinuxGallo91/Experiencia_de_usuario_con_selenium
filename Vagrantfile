@@ -4,6 +4,11 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/trusty64"
   config.vm.synced_folder ".", "/vagrant_data"
 
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 4
+  end
+
   #Ejecucion de shell de inicio 
   config.vm.provision "shell", inline: <<-SHELL
 
