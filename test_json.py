@@ -1,8 +1,7 @@
+import statusJson
 import json
 
-with open('correos.json') as f:
-    datos = json.load(f)
-
-for p in datos['correos']:
-    print('correo: {}'.format(p['usuario']))
-    print('password: {}'.format(p['password']))
+# print(statusJson.JsonPorEnviar.json_a_enviar)
+json.dumps
+y = json.dumps(statusJson.JsonPorEnviar.generar_nuevo_template_json(), sort_keys=False, indent=4)
+print(y)

@@ -5,3 +5,4 @@ class FormatUtils:
     def remover_backspaces(cadena):
         return cadena.replace('&nbsp;', ' ')
 
+    
