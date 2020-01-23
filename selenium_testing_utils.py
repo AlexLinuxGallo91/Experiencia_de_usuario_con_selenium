@@ -3,9 +3,13 @@ from selenium.webdriver import chrome
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from correo import Correo
 from format_utils import FormatUtils
 from temporizador import Temporizador
+from validacion_result import Result
 import mysql.connector
 import json
 import time
@@ -16,14 +20,25 @@ class SeleniumTesting:
     # con el uso del navefador Mozilla Firefox
     @staticmethod
     def inicializar_webdriver_firefox(path_driver):
-        opciones_firefox = webdriver.FirefoxOptions()
-        
+        #opciones_firefox = webdriver.FirefoxOptions()
+        perfil_firefox = webdriver.FirefoxProfile()
+        firefox_capabilities = webdriver.DesiredCapabilities().FIREFOX.copy()
+        firefox_capabilities.update({'acceptInsecureCerts': True, 'acceptSslCerts': True})
+        firefox_capabilities['acceptSslCerts'] = True
+
         # ignora las certificaciones de seguridad, esto solamente se realiza
         # para la experiencia de usuario
-        opciones_firefox.add_argument('--ignore-certificate-errors')
-        opciones_firefox.headless = True
+        #opciones_firefox.add_argument('--ignore-certificate-errors')
+        #opciones_firefox.accept_insecure_certs = True
+        perfil_firefox.accept_untrusted_certs = True
+        perfil_firefox.assume_untrusted_cert_issuer = False
+         
+        # opciones_firefox.headless = True
 
-        return webdriver.Firefox(executable_path=path_driver, firefox_options=opciones_firefox)
+        return webdriver.Firefox(executable_path=path_driver, 
+                                 #firefox_options=opciones_firefox, 
+                                 firefox_profile=perfil_firefox,
+                                 capabilities=firefox_capabilities)
 
 
     # inicializa un nuevo driver (chrome driver) para la experiencia de usuario
@@ -57,31 +72,64 @@ class SeleniumTesting:
     # funcion el cual permite navegar hacia la url que se establezca como parametro
     @staticmethod
     def navegar_a_sitio(webdriver, url_a_navegar):
-        print('navegando hacia {}'.format(url_a_navegar))
-        webdriver.get(url_a_navegar)
+        resultado = Result()
+
+        print('ingresando a la siguiente url: "{}"'.format(url_a_navegar))
+        try:
+            webdriver.set_page_load_timeout(10)
+            webdriver.get(url_a_navegar)
+            resultado.mensaje_error = 'Se ingresa al sitio con exito'
+            resultado.validacion_correcta = True
+            print(resultado.mensaje_error)
+        except TimeoutException as e:
+            resultado.mensaje_error = 'Han transcurrido mas de 10 segundos sin'\
+                                      'poder acceder al sitio: {}'.format(e.msg)
+            resultado.validacion_correcta = False
+            print(resultado.mensaje_error)
+         
+        return resultado
 
 
     @staticmethod
-    def iniciar_sesion_en_owa(driver, correo):
-
+    def iniciar_sesion_en_owa(driver, correo_en_prueba):
         # obtiene los elementos html para los campos de usuario, password y el boton de inicio de
         # sesion
         time.sleep(2)
         input_usuario = driver.find_element_by_id('username')
         input_password = driver.find_element_by_id('password')
         boton_ingreso_correo = driver.find_element_by_xpath("//input[@type='submit'][@class='btn']")
+        mensaje_error_de_credenciales = None
+        result = Result()
 
         # ingresa los datos en cada uno de los inputs localizados en el sitio de owa, uno por
         # cada segundo
-        input_usuario.send_keys(correo.user)
         time.sleep(1)
-        input_password.send_keys(correo.password)
+        input_usuario.send_keys(correo_en_prueba.correo)
+        time.sleep(1)
+        input_password.send_keys(correo_en_prueba.password)
         time.sleep(1)
         boton_ingreso_correo.send_keys(Keys.RETURN)
-        time.sleep(1)
+        time.sleep(3)
 
-        # verifica que se haya ingresado correctamente al OWA
+        driver.accept_insecure_certs = True
+        driver.accept_untrusted_certs = True
 
+        # verifica que se haya ingresado correctamente al OWA, se localiza si esta establecido
+        # el mensaje de error de credenciales dentro del aplicativo del OWA
+        try:
+            mensaje_error_de_credenciales = driver.find_element_by_id('trInvCrd')
+            print('No se puede ingresar al aplicativo debido a error de credenciales:')
+            mensaje_error_de_credenciales = driver.find_element_by_xpath("//tr[@id='trInvCrd']/td")
+            print('Se muestra el siguiente mensaje de advertencia: {} '.format(
+                mensaje_error_de_credenciales.get_attribute('innerHTML')))
+            result.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
+            result.validacion_correcta = False
+        except NoSuchElementException:
+            print('No se encontro el mensaje de error de credenciales')
+            result.mensaje_error = 'No se encontro el mensaje de error de credenciales'
+            result.validacion_correcta = True
+        
+        return result
 
     # verifica si se encontro el elemento deseado mediante el id
     # retorna True si se encontro el elemento
@@ -124,17 +172,20 @@ class SeleniumTesting:
     def navegacion_de_carpetas_por_segundos(lista_carpetas, driver, numero_de_segundos=120):
                 
         # inicializa un thread el cual se encargara de hacer el conteo de los segundos
-        Temporizador.inicializar_hilo()
 
-        while Temporizador.obtener_segundos_transcurridos() <= numero_de_segundos:
+        tiempo_por_verificar = numero_de_segundos + Temporizador.obtener_tiempo_timer()
+        tiempo_de_inicio = Temporizador.obtener_tiempo_timer()
+        segundos = 0
+        while Temporizador.obtener_tiempo_timer() <= tiempo_por_verificar:
             for carpeta in lista_carpetas:
+                
+                segundos = Temporizador.obtener_tiempo_timer() - tiempo_de_inicio  
+                print('Tiempo transcurrido: {}s'.format(segundos))
 
-                if(Temporizador.obtener_segundos_transcurridos() >= 120):
-                    # Se reinicia el temporizador a 0 segundos
-                    Temporizador.reiniciar_segundos()
+                if segundos > numero_de_segundos:
+                    print('Han transcurrido 2 minutos, se procede a cerrar la sesion')
                     return
 
-                print('Tiempo de navegacion de carpetas transcurrido: {}'.format(Temporizador.obtener_segundos_transcurridos()))
                 print('Ingresando a la carpeta: {}'.format(carpeta))
                 elemento_html_carpeta = driver.find_element_by_xpath('//span[@id="spnFldrNm"][@fldrnm="{}"]'.format(carpeta))
                 time.sleep(4)
@@ -150,10 +201,10 @@ class SeleniumTesting:
                 print('Se ha encontrado un dialogo informativo, se procede a cerrarlo')
                 
                 try:
-                    time.sleep(2)
+                    time.sleep(8)
                     boton_remover_dialogo = driver.find_element_by_id('imgX')
                     boton_remover_dialogo.click()
-                except ElementClickInterceptedException as e:
+                except ElementClickInterceptedException:
                     print('Se encontro un dialogo informativo pero fue imposible cerrarlo.')
                     print('Se intenta nuevamente el cierre del dialogo')
                     SeleniumTesting.verificar_dialogo_de_interrupcion(driver)
@@ -163,8 +214,17 @@ class SeleniumTesting:
     @staticmethod
     def cerrar_sesion(driver):
         elemento_html_btn_cerrar_sesion = driver.find_element_by_id('aLogOff')
-        elemento_html_btn_cerrar_sesion.send_keys(Keys.RETURN)
+        elemento_html_btn_cerrar_sesion.click()
+        time.sleep(8)
+
+        url_actual = driver.current_url
+
+        if 'exchangeadministrado.com/owa/auth/logoff.aspx' in url_actual:
+            print('Se cierra con exito la sesion')
+
         driver.refresh()
+
+        time.sleep(10)
+
         driver.close()
         driver.quit()
-        pass

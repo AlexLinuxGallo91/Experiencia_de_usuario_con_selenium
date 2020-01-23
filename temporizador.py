@@ -1,30 +1,20 @@
 import threading
 import time
+import datetime
 
 class Temporizador:
 
-    segundos_transcurridos = 0
-    hilo = None
-
     @staticmethod
-    def inicializar_hilo():
-        Temporizador.hilo = threading.Thread(target=Temporizador.verificar_temporizador)
-        Temporizador.hilo.start()
+    def obtener_tiempo_timer():
+        return time.perf_counter()
 
 
     @staticmethod
-    def verificar_temporizador():
-        while Temporizador.segundos_transcurridos < 120:
-            Temporizador.segundos_transcurridos = Temporizador.segundos_transcurridos + 1
-            time.sleep(1) 
+    def obtener_fecha_tiempo_actual():
+        fecha_actual = datetime.datetime.now()
+        return fecha_actual.strftime('%Y-%m-%dT%H:%M-06:00')
 
+    
+    
 
-    @staticmethod
-    def reiniciar_segundos():
-        Temporizador.segundos_transcurridos = 0
-
-
-    @staticmethod
-    def obtener_segundos_transcurridos():
-        return Temporizador.segundos_transcurridos
 

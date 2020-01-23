@@ -1,7 +1,7 @@
 import constantes_json 
 import json
 
-#Clase el cual guarda cada uno estados de las pruebas que se realizaran en cada uno de los steps/orders 
+# Clase el cual guarda cada uno estados de las pruebas que se realizaran en cada uno de los steps/orders 
 
 class JsonPorEnviar:
 
@@ -65,52 +65,3 @@ class JsonPorEnviar:
         json_a_enviar["steps"][2]["output"][0]["name"] = constantes_json.PASO_3_1
 
         return json_a_enviar
-
-    json_a_enviar = {
-        "start":"",
-        "end":"",
-        "status":"",
-        "time":0,
-        "steps":[
-            {
-                "order":1,
-                "name":"Validaci\u00f3n de Inicio de Sesi\u00f3n en OWA",
-                "status":"",
-                "output":[
-                     {
-                        "order":1,
-                        "name":"Validaci\u00f3n Ingreso correcto al OWA",
-                        "status":"",
-                        "output":""
-                    }
-                ]
-            },
-               {
-                "order":2,
-                "name":"Validaci\u00f3n Navegacion entre carpetas",
-                "status":"",
-                "output":[
-                     {
-                        "order":1,
-                        "name":"Validaci\u00f3n de navegacion entre las carpetas correcta",
-                        "status":"",
-                        "output":""
-                    }
-                ]
-            },
-               {
-                "order":3,
-                "name":"Validaci\u00f3n de Cierre de Sesi\u00f3n en OWA",
-                "status":"",
-                "output":[
-                     {
-                        "order":1,
-                        "name":"Validaci\u00f3n Cierre de Sesi\u00f3n correcta dentro del OWA",
-                        "status":"",
-                        "output":""
-                    }
-                ]
-            },
-            
-        ]
-    }

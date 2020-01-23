@@ -8,6 +8,10 @@ from correo import Correo
 from temporizador import Temporizador
 from selenium_testing_utils import SeleniumTesting
 from format_utils import FormatUtils
+from statusJson import JsonPorEnviar
+from validacion_result import Result
+from validacion_result import EvaluacionStepsJson
+import sys
 import logging
 import time
 import json
@@ -25,19 +29,43 @@ path_web_driver = ''
 
 #ruta del webdriver de chrome
 path_web_driver = "/usr/bin/webdrivers/geckodriver"
+path_web_driver_local_firefox = 'C:\webdrivers\geckodriver.exe'
+path_web_driver_local_chrome = 'C:\webdrivers\geckodriver.exe'
 
 #url exchange 2010 por probar
 url_exchange = "https://exchangeadministrado.com/owa"
 
 def iniciar_prueba(correo):
-    carpetas_formateadas = []
-    driver = SeleniumTesting.inicializar_webdriver_firefox(path_web_driver)
-    SeleniumTesting.navegar_a_sitio(driver, url_exchange)
-    SeleniumTesting.iniciar_sesion_en_owa(driver, correo)
 
-    time.sleep(3)
+    # lista de carpetas por navegar (estos los obtenemos por medio del webdriver)
+    carpetas_formateadas = []
+
+    # genera la estructura del archivo JSON (resultado/salida)
+    objeto_json = JsonPorEnviar.generar_nuevo_template_json()
+
+    # establece el datetime de inicio dentro del json
+    objeto_json = EvaluacionStepsJson.establecer_fecha_tiempo_de_inicio(objeto_json)
+
+    # objeto result el cual verificara cada una de las validaciones para cada uno de 
+    # los steps y el cual nos permitira adjuntar el resultado en el JSON
+    validacion_result = Result()
+
+    # inicializa el driver, ya ses con un navegador chrome o firefox
+    driver = SeleniumTesting.inicializar_webdriver_firefox(path_web_driver_local_firefox)
+
+
+    validacion_result = SeleniumTesting.navegar_a_sitio(driver, url_exchange)
+
+    objeto_json = EvaluacionStepsJson.validacion_ingreso_a_sitio(validacion_result, 
+                                                                 objeto_json)
+                  
+    validacion_result = SeleniumTesting.iniciar_sesion_en_owa(driver, correo)
+
+    objeto_json = EvaluacionStepsJson.validacion_json_inicio_sesion(validacion_result, 
+                                                                    objeto_json)
+    time.sleep(1)
     carpetas_formateadas = SeleniumTesting.obtener_carpetas_en_sesion(driver)
-    time.sleep(3)
+    time.sleep(1)
 
     # se inicializa la navegacion entre carpetas
     SeleniumTesting.navegacion_de_carpetas_por_segundos(carpetas_formateadas, driver)
@@ -48,15 +76,35 @@ def iniciar_prueba(correo):
     # reinicia la lista de las carpetas
     carpetas_formateadas = []
 
+    objeto_json = EvaluacionStepsJson.establecer_tiempo_de_finalizacion(objeto_json)
+
+    # escribe en un archivo el objeto json
+    with open('app.json', 'w') as fp:
+        json.dump(objeto_json, fp, indent=4, separators=(',', ': '))
+
 
 # Punto de partida/ejecucion principal del script
 def main():
 
-    # Se obtienen los correos a probar
-    lista_cuentas_correos = DbUtils.obtener_lista_cuentas_db()
+    argumentos = sys.argv[1:]
+    correo_a_probar = None
 
-    for user_correo in lista_cuentas_correos:
-        iniciar_prueba(user_correo)
+    # verifica que al menos se hayan ingresado dos argumentos
+    if len(argumentos) != 2:
+        print('favor de ingresar correo y password')
+        return exit(1)
+    else:
+        correo_a_probar = Correo(argumentos[0],argumentos[1])
+        print('cuenta por analizar: {}'.format(correo_a_probar))
+
+    iniciar_prueba(correo_a_probar)
+
+    # Se obtienen los correos a probar
+    #lista_cuentas_correos = DbUtils.obtener_lista_cuentas_db()
+
+    #for user_correo in lista_cuentas_correos:
+    #    iniciar_prueba(user_correo)
+
 
 # Ejecucion principal del Script
 main()

@@ -2,6 +2,8 @@ import configparser
 
 class FormatUtils:
 
+    CADENA_VACIA = ''
+
     # lector de propiedades dentro de un archivo ini
     @staticmethod
     def lector_archivo_ini(path_archivo_ini):
