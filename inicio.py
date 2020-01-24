@@ -47,38 +47,34 @@ def iniciar_prueba(correo):
     # establece el datetime de inicio dentro del json
     objeto_json = EvaluacionStepsJson.establecer_fecha_tiempo_de_inicio(objeto_json)
 
-    # objeto result el cual verificara cada una de las validaciones para cada uno de 
-    # los steps y el cual nos permitira adjuntar el resultado en el JSON
-    validacion_result = Result()
+    # objeto con lista de objetos result el cual verificara cada una de 
+    # las validaciones para cada uno de los steps y el cual nos permitira adjuntar 
+    # el resultado en el JSON
+    lista_validaciones = ValidacionResultList()
 
     # inicializa el driver, ya ses con un navegador chrome o firefox
     driver = SeleniumTesting.inicializar_webdriver_firefox(path_web_driver_local_firefox)
 
+    lista_validaciones = SeleniumTesting.navegar_a_sitio(driver, url_exchange, lista_validaciones)
+    lista_validaciones = SeleniumTesting.iniciar_sesion_en_owa(driver, correo, lista_validaciones)
 
-    validacion_result = SeleniumTesting.navegar_a_sitio(driver, url_exchange)
-
-    objeto_json = EvaluacionStepsJson.validacion_ingreso_a_sitio(validacion_result, 
-                                                                 objeto_json)
-                  
-    validacion_result = SeleniumTesting.iniciar_sesion_en_owa(driver, correo)
-
-    objeto_json = EvaluacionStepsJson.validacion_json_inicio_sesion(validacion_result, 
-                                                                    objeto_json)
-                                                                    
-    time.sleep(1)
+    time.sleep(2)
     carpetas_formateadas = SeleniumTesting.obtener_carpetas_en_sesion(driver)
-    time.sleep(1)
 
-    # se inicializa la navegacion entre carpetas
-    SeleniumTesting.navegacion_de_carpetas_por_segundos(carpetas_formateadas, driver, numero_de_segundos=20)
+    lista_validaciones = SeleniumTesting.navegacion_de_carpetas_por_segundos(carpetas_formateadas, 
+                                                  driver,lista_validaciones,numero_de_segundos=20)
 
     #se cierra sesion desde el OWA
-    SeleniumTesting.cerrar_sesion(driver)
+    lista_validaciones = SeleniumTesting.cerrar_sesion(driver, lista_validaciones)
 
     # reinicia la lista de las carpetas
     carpetas_formateadas = []
 
-    objeto_json = EvaluacionStepsJson.establecer_tiempo_de_finalizacion(objeto_json)
+    # objeto_json = EvaluacionStepsJson.validacion_ingreso_a_sitio(objeto_json)
+
+    objeto_json = EvaluacionStepsJson.formar_cuerpo_json(lista_validaciones, objeto_json)
+
+    # objeto_json = EvaluacionStepsJson.establecer_tiempo_de_finalizacion(objeto_json)
 
     # escribe en un archivo el objeto json
     with open('app.json', 'w') as fp:
