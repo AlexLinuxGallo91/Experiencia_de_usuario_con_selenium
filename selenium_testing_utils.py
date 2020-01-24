@@ -74,6 +74,7 @@ class SeleniumTesting:
     def navegar_a_sitio(webdriver, url_a_navegar):
         resultado = Result()
 
+        resultado.inicializar_tiempo_de_ejecucion()
         print('ingresando a la siguiente url: "{}"'.format(url_a_navegar))
         try:
             webdriver.set_page_load_timeout(10)
@@ -86,7 +87,9 @@ class SeleniumTesting:
                                       'poder acceder al sitio: {}'.format(e.msg)
             resultado.validacion_correcta = False
             print(resultado.mensaje_error)
-         
+        
+        resultado.finalizar_tiempo_de_ejecucion()
+        resultado.establecer_tiempo_de_ejecucion()
         return resultado
 
 

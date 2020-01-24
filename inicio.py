@@ -11,6 +11,7 @@ from format_utils import FormatUtils
 from statusJson import JsonPorEnviar
 from validacion_result import Result
 from validacion_result import EvaluacionStepsJson
+from validacion_result import ValidacionResultList
 import sys
 import logging
 import time
@@ -63,12 +64,13 @@ def iniciar_prueba(correo):
 
     objeto_json = EvaluacionStepsJson.validacion_json_inicio_sesion(validacion_result, 
                                                                     objeto_json)
+                                                                    
     time.sleep(1)
     carpetas_formateadas = SeleniumTesting.obtener_carpetas_en_sesion(driver)
     time.sleep(1)
 
     # se inicializa la navegacion entre carpetas
-    SeleniumTesting.navegacion_de_carpetas_por_segundos(carpetas_formateadas, driver)
+    SeleniumTesting.navegacion_de_carpetas_por_segundos(carpetas_formateadas, driver, numero_de_segundos=20)
 
     #se cierra sesion desde el OWA
     SeleniumTesting.cerrar_sesion(driver)

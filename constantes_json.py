@@ -16,3 +16,9 @@ PASO_3_1 = "Validaci\u00f3n Cierre de Sesi\u00f3n correcta dentro del OWA"
 OUTPUT_1_1 = ""
 OUTPUT_2_1 = ""
 OUTPUT_3_1 = ""
+
+# Mensajes de validacion
+VALDACION_CORRECTA_PASO_1_1 = "Se valid\u00f3 e ingreso exitosamente a la sesi\u00f3n"
+VALDACION_CORRECTA_PASO_2_1 = "Se navega correctamente en las carpetas del correo electr\u00f3nico"
+VALDACION_CORRECTA_PASO_3_1 = "Se cierra correctamente la sesi\u00f3n"
+
