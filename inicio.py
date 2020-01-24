@@ -18,11 +18,8 @@ import time
 import json
 
 #inicializa el logging
-logging.basicConfig(level=logging.INFO,
-                    filename='log_exchange_2010', 
-                    filemode='w', 
-                    format='%(asctime)s  %(name)s  %(levelname)s: %(message)s', 
-                    datefmt='%m-%d %H:%M')
+logging.basicConfig(level=logging.INFO, filename='log_exchange_2010', filemode='w', 
+                    format='%(asctime)s  %(name)s  %(levelname)s: %(message)s', datefmt='%m-%d %H:%M')
                     
 correos_obtenidos = []
 driver = None
@@ -62,7 +59,7 @@ def iniciar_prueba(correo):
     carpetas_formateadas = SeleniumTesting.obtener_carpetas_en_sesion(driver)
 
     lista_validaciones = SeleniumTesting.navegacion_de_carpetas_por_segundos(carpetas_formateadas, 
-                                                  driver,lista_validaciones,numero_de_segundos=20)
+                                                  driver,lista_validaciones)
 
     #se cierra sesion desde el OWA
     lista_validaciones = SeleniumTesting.cerrar_sesion(driver, lista_validaciones)
