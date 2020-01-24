@@ -232,10 +232,10 @@ class SeleniumTesting:
                     time.sleep(4)
                     boton_remover_dialogo = driver.find_element_by_id('imgX')
                     boton_remover_dialogo.click()
-                except ElementClickInterceptedException as e:
+                except ElementClickInterceptedException:
                     print('Se encontro un dialogo informativo pero fue imposible cerrarlo.')
                     print('Se intenta nuevamente el cierre del dialogo')
-                    SeleniumTesting.verificar_dialogo_de_interrupcion(driver)
+                    SeleniumTesting.verificar_dialogo_de_interrupcion(driver, result)
 
         
     # Cierra la sesion desde el aplicativo y termina la sesion en el webdriver
