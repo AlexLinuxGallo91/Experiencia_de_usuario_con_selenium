@@ -16,6 +16,7 @@ import sys
 import logging
 import time
 import json
+import datetime
 
 #inicializa el logging
 logging.basicConfig(level=logging.INFO, filename='log_exchange_2010', filemode='w', 
@@ -59,7 +60,7 @@ def iniciar_prueba(correo):
     carpetas_formateadas = SeleniumTesting.obtener_carpetas_en_sesion(driver)
 
     lista_validaciones = SeleniumTesting.navegacion_de_carpetas_por_segundos(carpetas_formateadas, 
-                                                  driver,lista_validaciones)
+                                                  driver,lista_validaciones, numero_de_segundos=30)
 
     #se cierra sesion desde el OWA
     lista_validaciones = SeleniumTesting.cerrar_sesion(driver, lista_validaciones)
@@ -67,14 +68,10 @@ def iniciar_prueba(correo):
     # reinicia la lista de las carpetas
     carpetas_formateadas = []
 
-    # objeto_json = EvaluacionStepsJson.validacion_ingreso_a_sitio(objeto_json)
-
     objeto_json = EvaluacionStepsJson.formar_cuerpo_json(lista_validaciones, objeto_json)
 
-    # objeto_json = EvaluacionStepsJson.establecer_tiempo_de_finalizacion(objeto_json)
-
-    # escribe en un archivo el objeto json
-    with open('app.json', 'w') as fp:
+    # escribe el archivo JSON
+    with open('result_json_{}.json'.format(datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")), 'w') as fp:
         json.dump(objeto_json, fp, indent=4, separators=(',', ': '))
 
 

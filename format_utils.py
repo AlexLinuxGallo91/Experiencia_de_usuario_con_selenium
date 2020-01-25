@@ -3,6 +3,9 @@ import configparser
 class FormatUtils:
 
     CADENA_VACIA = ''
+    NOMBRE_ARCHIVO_CONFIGURACION = 'config.ini'
+    BACKSPACE = '&nbsp;'
+    ESPACIO = ' '
 
     # lector de propiedades dentro de un archivo ini
     @staticmethod
@@ -11,7 +14,7 @@ class FormatUtils:
 
         try:
             config = configparser.ConfigParser()
-            config.read('config.ini')
+            config.read(FormatUtils.NOMBRE_ARCHIVO_CONFIGURACION)
         except Error as e:
             print('sucedio un error al leer el archivo de configuracion: {}'.format(e))
         
@@ -21,7 +24,7 @@ class FormatUtils:
     # remueve los espacios en los textos de los elementos HTML
     @staticmethod
     def remover_backspaces(cadena):
-        return cadena.replace('&nbsp;', ' ')
+        return cadena.replace(FormatUtils.BACKSPACE, FormatUtils.ESPACIO)
 
     
 

@@ -114,6 +114,8 @@ class EvaluacionStepsJson:
         objeto_json = EvaluacionStepsJson.validacion_json_cierre_sesion(
             result_list.result_validacion_cierre_sesion, objeto_json)
 
+        objeto_json = EvaluacionStepsJson.establecer_tiempo_de_finalizacion(objeto_json)
+
         # se establece el tiempo fin 
             
         return objeto_json
@@ -124,8 +126,6 @@ class ValidacionResultList:
         self.result_tiempo_de_ejecucion = Result()
         
         # establece el tiempo de inicio de ejecucion
-        
-
         self.result_validacion_ingreso_url = Result()
         self.result_validacion_acceso_portal_owa = Result()
         self.result_validacion_navegacion_carpetas = Result()

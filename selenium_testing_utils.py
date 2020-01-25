@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.common.exceptions import StaleElementReferenceException
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from validacion_result import ValidacionResultList
 from correo import Correo
@@ -84,11 +85,15 @@ class SeleniumTesting:
             resultado.mensaje_error = 'Se ingresa al sitio con exito'
             resultado.validacion_correcta = True
             print(resultado.mensaje_error)
+        except WebDriverException as e:
+            resultado.mensaje_error = 'No se puede ingresar al sitio, favor de verificar la red'
+            resultado.validacion_correcta = False
+            print(resultado.mensaje_error)
         except TimeoutException as e:
             resultado.mensaje_error = 'Han transcurrido mas de 20 segundos sin'\
                                       ' poder acceder al sitio: {}'.format(e.msg)
             resultado.validacion_correcta = False
-            print(resultado.mensaje_error)
+            print(resultado.mensaje_error)    
         
         resultado.finalizar_tiempo_de_ejecucion()
         resultado.establecer_tiempo_de_ejecucion()
@@ -100,49 +105,65 @@ class SeleniumTesting:
     @staticmethod
     def iniciar_sesion_en_owa(driver, correo_en_prueba, result_list):
 
-        resultado = Result()
-        resultado.inicializar_tiempo_de_ejecucion()
-        
-        # obtiene los elementos html para los campos de usuario, password y el boton de inicio de
-        # sesion
-        time.sleep(2)
-        input_usuario = driver.find_element_by_id('username')
-        input_password = driver.find_element_by_id('password')
-        boton_ingreso_correo = driver.find_element_by_xpath("//input[@type='submit'][@class='btn']")
-        mensaje_error_de_credenciales = None
-
-        # ingresa los datos en cada uno de los inputs localizados en el sitio de owa, uno por
-        # cada segundo
-        time.sleep(1)
-        input_usuario.send_keys(correo_en_prueba.correo)
-        time.sleep(1)
-        input_password.send_keys(correo_en_prueba.password)
-        time.sleep(1)
-        boton_ingreso_correo.send_keys(Keys.RETURN)
-        time.sleep(3)
-
         driver.accept_insecure_certs = True
         driver.accept_untrusted_certs = True
 
+        resultado = Result()
+        resultado.inicializar_tiempo_de_ejecucion()
+        mensaje_error_de_credenciales = None
+       
+        try:
+            # obtiene los elementos html para los campos de usuario, password y el boton de inicio de
+            # sesion
+            time.sleep(2)
+
+            input_usuario = driver.find_element_by_id('username')
+            input_password = driver.find_element_by_id('password')
+            boton_ingreso_correo = driver.find_element_by_xpath("//input[@type='submit'][@class='btn']")
+
+            # ingresa los datos en cada uno de los inputs localizados en el sitio de owa, uno por
+            # cada segundo
+            time.sleep(1)
+            input_usuario.send_keys(correo_en_prueba.correo)
+                
+            time.sleep(1)
+            input_password.send_keys(correo_en_prueba.password)
+                
+            time.sleep(1)
+            boton_ingreso_correo.send_keys(Keys.RETURN)
+            time.sleep(3)
+
+        except NoSuchElementException:
+            print('No fue posible ingresar al portal, no se encontraron los inputs para credenciales')
+            resultado.mensaje_error = 'No fue posible ingresar al portal, no se encontraron los inputs para credenciales'
+            resultado.validacion_correcta = True
+        except WebDriverException:
+            resultado.mensaje_error = 'No se puede ingresar al sitio, favor de verificar la red'
+            resultado.validacion_correcta = False
+            print(resultado.mensaje_error)
+        
         # verifica que se haya ingresado correctamente al OWA, se localiza si esta establecido
         # el mensaje de error de credenciales dentro del aplicativo del OWA
-        try:
-            mensaje_error_de_credenciales = driver.find_element_by_id('trInvCrd')
-            print('No se puede ingresar al aplicativo debido a error de credenciales:')
-            mensaje_error_de_credenciales = driver.find_element_by_xpath("//tr[@id='trInvCrd']/td")
-            print('Se muestra el siguiente mensaje de advertencia: {} '.format(
-                mensaje_error_de_credenciales.get_attribute('innerHTML')))
-            resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
-            resultado.validacion_correcta = False
-        except NoSuchElementException:
-            print('No se encontro el mensaje de error de credenciales')
-            resultado.mensaje_error = 'No se encontro el mensaje de error de credenciales'
-            resultado.validacion_correcta = True
+
+        if resultado.validacion_correcta == False:
+            try:
+                mensaje_error_de_credenciales = driver.find_element_by_id('trInvCrd')
+                print('No se puede ingresar al aplicativo debido a error de credenciales:')
+                mensaje_error_de_credenciales = driver.find_element_by_xpath("//tr[@id='trInvCrd']/td")
+                print('Se muestra el siguiente mensaje de advertencia: {} '.format(
+                    mensaje_error_de_credenciales.get_attribute('innerHTML')))
+                resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
+                resultado.validacion_correcta = False
+            except NoSuchElementException:
+                print('Se ingresa correctamente al OWA')
+                resultado.mensaje_error = 'Se ingresa correctamente al OWA'
+                resultado.validacion_correcta = True
 
         resultado.finalizar_tiempo_de_ejecucion()
         resultado.establecer_tiempo_de_ejecucion()
         result_list.result_validacion_acceso_portal_owa = resultado
         return result_list
+
 
     # verifica si se encontro el elemento deseado mediante el id
     # retorna True si se encontro el elemento
@@ -190,7 +211,19 @@ class SeleniumTesting:
         tiempo_de_inicio = Temporizador.obtener_tiempo_timer()
         segundos = 0
 
+        # verifica se tenga al menos una carpeta
+        if len(lista_carpetas) == 0:
+            result_navegacion_carpetas.finalizar_tiempo_de_ejecucion()
+            result_navegacion_carpetas.establecer_tiempo_de_ejecucion()
+            result_navegacion_carpetas.validacion_correcta = False
+            result_navegacion_carpetas.mensaje_error = 'No se encontraron carpetas dentro de la sesion'
+            result_list.result_validacion_navegacion_carpetas = result_navegacion_carpetas
+            print('No se encontraron carpetas por navegar')
+
+            return result_list
+
         while Temporizador.obtener_tiempo_timer() <= tiempo_por_verificar:
+            print(Temporizador.obtener_tiempo_timer())
             for carpeta in lista_carpetas:
                 
                 segundos = Temporizador.obtener_tiempo_timer() - tiempo_de_inicio  
@@ -244,12 +277,25 @@ class SeleniumTesting:
 
         resultado_cierre_sesion = Result()
         resultado_cierre_sesion.inicializar_tiempo_de_ejecucion()
+        url_actual = ''
+        elemento_html_btn_cerrar_sesion = None
 
-        elemento_html_btn_cerrar_sesion = driver.find_element_by_id('aLogOff')
-        elemento_html_btn_cerrar_sesion.click()
-        time.sleep(8)
+        try:
+            time.sleep(3)
+            elemento_html_btn_cerrar_sesion = driver.find_element_by_id('aLogOff')
+            elemento_html_btn_cerrar_sesion.click()
+            time.sleep(8)
 
-        url_actual = driver.current_url
+            # obtiene la url actual como una cadena
+            url_actual = driver.current_url
+
+        except NoSuchElementException as e:
+            print('Error al salir de la sesion, no se localizo la opcion para el cierre de sesion')
+            resultado_cierre_sesion.mensaje_error = 'No fue posible cerrar la sesion correctamente'
+            resultado_cierre_sesion.validacion_correcta = False
+        finally:
+            driver.close()
+            driver.quit()
 
         if 'exchangeadministrado.com/owa/auth/logoff.aspx' in url_actual:
             print('Se cierra con exito la sesion')
@@ -258,9 +304,6 @@ class SeleniumTesting:
         else:
             resultado_cierre_sesion.mensaje_error = 'No fue posible cerrar la sesion correctamente'
             resultado_cierre_sesion.validacion_correcta = False
-
-        driver.close()
-        driver.quit()
 
         resultado_cierre_sesion.finalizar_tiempo_de_ejecucion()
         resultado_cierre_sesion.establecer_tiempo_de_ejecucion()
