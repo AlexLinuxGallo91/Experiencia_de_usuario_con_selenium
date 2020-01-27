@@ -64,7 +64,7 @@ def iniciar_prueba(correo):
 
     #se cierra sesion desde el OWA
     lista_validaciones = SeleniumTesting.cerrar_sesion(driver, lista_validaciones)
-
+    
     # reinicia la lista de las carpetas
     carpetas_formateadas = []
 
@@ -73,7 +73,6 @@ def iniciar_prueba(correo):
     # escribe el archivo JSON
     with open('result_json_{}.json'.format(datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")), 'w') as fp:
         json.dump(objeto_json, fp, indent=4, separators=(',', ': '))
-
 
 # Punto de partida/ejecucion principal del script
 def main():

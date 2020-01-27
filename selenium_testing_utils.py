@@ -7,6 +7,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import InvalidSessionIdException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from validacion_result import ValidacionResultList
 from correo import Correo
@@ -55,29 +56,12 @@ class SeleniumTesting:
         opciones_chrome.add_argument('--ignore-certificate-errors')
         return webdriver.Chrome(path_driver, chrome_options=opciones_chrome)
 
-
-    # obtencion de usuarios y passwords de los correos electronicos desde un archivo JSON
-    # alojado localmente en la carpeta del proyecto
-    @staticmethod
-    def obtencion_usuarios_desde_archivo_json(path_archivo_json):
-        correos_obtenidos = []
-        
-        with open(path_archivo_json) as f:
-            datos_obtenidos_json = json.load(f)
-    
-        for item in datos_obtenidos_json['correos']:
-            print('datos obtenidos --> correo : {} - {}'.format(item['usuario'], item['password']))
-            correos_obtenidos.append(Correo(item['usuario'], item['password']))   
-        
-        return correos_obtenidos
-
-
     # funcion el cual permite navegar hacia la url que se establezca como parametro
     @staticmethod
     def navegar_a_sitio(webdriver, url_a_navegar, result_list):
         
         resultado = Result()
-        resultado.inicializar_tiempo_de_ejecucion()
+        resultado.tiempo_inicio_de_ejecucion = 0
         print('ingresando a la siguiente url: "{}"'.format(url_a_navegar))
         try:
             webdriver.set_page_load_timeout(20)
@@ -109,7 +93,11 @@ class SeleniumTesting:
         driver.accept_untrusted_certs = True
 
         resultado = Result()
-        resultado.inicializar_tiempo_de_ejecucion()
+        
+        resultado.tiempo_inicio_de_ejecucion = Temporizador.obtener_tiempo_timer()
+        resultado.datetime_inicial = Temporizador.obtener_fecha_tiempo_actual()
+        
+        # resultado.inicializar_tiempo_de_ejecucion()
         mensaje_error_de_credenciales = None
        
         try:
@@ -158,6 +146,11 @@ class SeleniumTesting:
                 print('Se ingresa correctamente al OWA')
                 resultado.mensaje_error = 'Se ingresa correctamente al OWA'
                 resultado.validacion_correcta = True
+            except InvalidSessionIdException:
+                print('No se puede ingresar al portal. No se establecio la conexion correctamente')
+                resultado.mensaje_error = 'No se puede ingresar al portal. Error de conexion'
+                resultado.validacion_correcta = False
+
 
         resultado.finalizar_tiempo_de_ejecucion()
         resultado.establecer_tiempo_de_ejecucion()
@@ -188,6 +181,8 @@ class SeleniumTesting:
     def obtener_carpetas_en_sesion(driver):
         lista_de_carpetas_localizadas = [] 
         lista_nombres_de_carpetas_formateadas = []  
+
+        time.sleep(5)
         lista_de_carpetas_localizadas = driver.find_elements_by_xpath("//*[@id='spnFldrNm']")
 
         for carpeta in lista_de_carpetas_localizadas:
@@ -223,11 +218,8 @@ class SeleniumTesting:
             return result_list
 
         while Temporizador.obtener_tiempo_timer() <= tiempo_por_verificar:
-            print(Temporizador.obtener_tiempo_timer())
             for carpeta in lista_carpetas:
-                
                 segundos = Temporizador.obtener_tiempo_timer() - tiempo_de_inicio  
-                print('Tiempo transcurrido: {}s'.format(segundos))
 
                 if segundos > numero_de_segundos:
                     print('Han transcurrido 2 minutos, se procede a cerrar la sesion')
@@ -246,6 +238,13 @@ class SeleniumTesting:
                 except StaleElementReferenceException as e:
                     print('Una de las carpetas no se localiza, se intentara ingresar nuevamente')
                     print('error: {}'.format(e.msg))
+                    driver.refresh()
+                    time.sleep(3)
+                except ElementClickInterceptedException as e:
+                    print('Una de las carpetas no se localiza, se intentara ingresar nuevamente')
+                    print('error: {}'.format(e.msg))
+                    driver.refresh()
+                    time.sleep(3)
         
         result_navegacion_carpetas.finalizar_tiempo_de_ejecucion()
         result_navegacion_carpetas.establecer_tiempo_de_ejecucion()

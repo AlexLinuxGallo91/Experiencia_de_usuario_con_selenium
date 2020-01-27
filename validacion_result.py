@@ -29,29 +29,47 @@ class Result:
     
 class EvaluacionStepsJson:
 
-    # validacion de ingreso a sitio:
-    @staticmethod
-    def validacion_json_ingreso_a_sitio(validacion_result, objeto_json):
-        objeto_json['steps'][0]['status'] = constantes_json.STATUS_CORRECTO
-        objeto_json['steps'][0]['output'][0]['output'] = validacion_result.mensaje_error
-        objeto_json['steps'][0]['output'][0]['status'] = constantes_json.STATUS_CORRECTO
-        objeto_json['steps'][0]['start'] = validacion_result.datetime_inicial
-        objeto_json['steps'][0]['end'] = validacion_result.datetime_final
-        objeto_json['steps'][0]['time'] = validacion_result.tiempo_total_de_la_ejecucion
-
-        return objeto_json
-
-
     # validacion para verificar el inicio de sesion correctamente
     @staticmethod
-    def validacion_json_inicio_sesion(validacion_result, objeto_json):
+    def validacion_json_inicio_sesion(result_url, 
+                                      result_sesion, 
+                                      objeto_json):
+        result_final = Result()
 
-        objeto_json['steps'][0]['status'] = constantes_json.STATUS_CORRECTO
-        objeto_json['steps'][0]['output'][0]['output'] = validacion_result.mensaje_error
-        objeto_json['steps'][0]['output'][0]['status'] = constantes_json.STATUS_CORRECTO
-        objeto_json['steps'][0]['start'] = validacion_result.datetime_inicial
-        objeto_json['steps'][0]['end'] = validacion_result.datetime_final
-        objeto_json['steps'][0]['time'] = validacion_result.tiempo_total_de_la_ejecucion
+        # valida el estatus de ambos steps
+        if result_url.validacion_correcta == False:
+            result_final.mensaje_error = result_url.mensaje_error
+            result_final.validacion_correcta = False
+        elif result_sesion.validacion_correcta == False:
+            result_final.mensaje_error = result_sesion.mensaje_error
+            result_final.validacion_correcta = False
+        else:
+            result_final.mensaje_error = result_sesion.mensaje_error
+            result_final.validacion_correcta = True
+        
+        # establece el datetime de inicio
+        result_final.datetime_inicial = result_url.datetime_inicial
+
+        # establece el datetime final
+        result_final.datetime_final = result_sesion.datetime_final
+
+        # establece el tiempo total de la ejecucion de ambos steps
+        result_final.tiempo_inicio_de_ejecucion = result_url.tiempo_inicio_de_ejecucion
+        result_final.tiempo_fin_de_ejecucion = result_sesion.tiempo_fin_de_ejecucion
+        # result_final.establecer_tiempo_de_ejecucion()
+        result_final.establecer_tiempo_de_ejecucion()
+
+        objeto_json['steps'][0]['status'] = constantes_json.STATUS_CORRECTO if \
+            result_final.validacion_correcta else constantes_json.STATUS_FALLIDO
+
+        objeto_json['steps'][0]['output'][0]['output'] = result_final.mensaje_error
+
+        objeto_json['steps'][0]['output'][0]['status'] = constantes_json.STATUS_CORRECTO if \
+            result_final.validacion_correcta else constantes_json.STATUS_FALLIDO
+
+        objeto_json['steps'][0]['start'] = result_final.datetime_inicial
+        objeto_json['steps'][0]['end'] = result_final.datetime_final
+        objeto_json['steps'][0]['time'] = result_final.tiempo_total_de_la_ejecucion
 
         return objeto_json
 
@@ -94,19 +112,20 @@ class EvaluacionStepsJson:
         objeto_json['time'] = Temporizador.obtener_tiempo_timer()
         objeto_json['status'] = constantes_json.STATUS_CORRECTO
         objeto_json['end'] = Temporizador.obtener_fecha_tiempo_actual()
+
         return objeto_json
     
     @staticmethod
     def formar_cuerpo_json(result_list, objeto_json):
         
-        # se establece el tiempo de inicio
+        # se establece el tiempo final de ejecucion
+        objeto_json = EvaluacionStepsJson.establecer_tiempo_de_finalizacion(objeto_json)
 
         # validaciones de cada step
-        objeto_json = EvaluacionStepsJson.validacion_json_ingreso_a_sitio(
-            result_list.result_validacion_ingreso_url, objeto_json)
-
         objeto_json = EvaluacionStepsJson.validacion_json_inicio_sesion(
-            result_list.result_validacion_acceso_portal_owa, objeto_json)
+            result_list.result_validacion_ingreso_url, 
+            result_list.result_validacion_acceso_portal_owa,
+            objeto_json)
 
         objeto_json = EvaluacionStepsJson.validacion_json_navegacion_carpetas(
             result_list.result_validacion_navegacion_carpetas, objeto_json)
@@ -114,10 +133,13 @@ class EvaluacionStepsJson:
         objeto_json = EvaluacionStepsJson.validacion_json_cierre_sesion(
             result_list.result_validacion_cierre_sesion, objeto_json)
 
-        objeto_json = EvaluacionStepsJson.establecer_tiempo_de_finalizacion(objeto_json)
+        suma_total_tiempo = 0
+        suma_total_tiempo = suma_total_tiempo + objeto_json['steps'][0]['time']
+        suma_total_tiempo = suma_total_tiempo + objeto_json['steps'][1]['time']
+        suma_total_tiempo = suma_total_tiempo + objeto_json['steps'][2]['time']
 
-        # se establece el tiempo fin 
-            
+        objeto_json['time'] = suma_total_tiempo
+
         return objeto_json
 
 class ValidacionResultList:
