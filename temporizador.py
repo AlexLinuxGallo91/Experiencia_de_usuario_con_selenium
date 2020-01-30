@@ -1,12 +1,14 @@
-import threading
 import time
+import timeit
 import datetime
 
 class Temporizador:
 
+    tiempo_inicial = time.perf_counter()
+
     @staticmethod
     def obtener_tiempo_timer():
-        return time.perf_counter()
+        return time.perf_counter() - Temporizador.tiempo_inicial
 
 
     @staticmethod

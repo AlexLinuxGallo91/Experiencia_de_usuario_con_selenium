@@ -14,17 +14,20 @@ from correo import Correo
 from format_utils import FormatUtils
 from temporizador import Temporizador
 from validacion_result import Result
+import logging
 import mysql.connector
 import json
 import time
 
 class SeleniumTesting:
 
+    log = logging.getLogger(__name__)
+
     # inicializa un nuevo driver (firefox) para la experiencia de usuario
     # con el uso del navefador Mozilla Firefox
     @staticmethod
     def inicializar_webdriver_firefox(path_driver):
-        #opciones_firefox = webdriver.FirefoxOptions()
+        opciones_firefox = webdriver.FirefoxOptions()
         perfil_firefox = webdriver.FirefoxProfile()
         firefox_capabilities = webdriver.DesiredCapabilities().FIREFOX.copy()
         firefox_capabilities.update({'acceptInsecureCerts': True, 'acceptSslCerts': True})
@@ -37,16 +40,31 @@ class SeleniumTesting:
         perfil_firefox.accept_untrusted_certs = True
         perfil_firefox.assume_untrusted_cert_issuer = False
          
-        # opciones_firefox.headless = True
+        opciones_firefox.headless = True
 
         return webdriver.Firefox(executable_path=path_driver, 
-                                 #firefox_options=opciones_firefox, 
+                                 firefox_options=opciones_firefox, 
                                  firefox_profile=perfil_firefox,
                                  capabilities=firefox_capabilities)
 
 
     # inicializa un nuevo driver (chrome driver) para la experiencia de usuario
     # con el uso del navefador google chrome
+    #
+    # UPDATE 29/enero/2020 11:51 P.M.
+    #
+    # En caso de utilizar el driver de chrome, el test de experiencia de usuario 
+    # en el OWA fallara. Esto debido a que al momento de inicializar el driver
+    # en modo "headless" (sin usar una interfaz grafica o el navegador en modo grafico)
+    # no podra ejecutar ni permitir scripts en javascript. El ultimo paso
+    # que se realiza de manera exitosa es al ingresar al portal de acceso OWA, pero 
+    # al momento de navegar entre las carpetas y cerrar la sesion, estos pasos fallaran,
+    # debido a que no renderiza/carga todo el contenido del sitio web por no permitir
+    # la ejecucion de scripts al momento de utilizar el driver en modo headless.
+    # 
+    # Por ello es mejor utilizar el driver de Firefox, ya que hasta el momento es el
+    # que ha dado menos problemas en realizar la prueba conectividad al OWA
+
     @staticmethod
     def inicializar_webdriver_chrome(path_driver):
         opciones_chrome = webdriver.ChromeOptions()
@@ -54,7 +72,17 @@ class SeleniumTesting:
         # ignora las certificaciones de seguridad, esto solamente se realiza
         # para la experiencia de usuario
         opciones_chrome.add_argument('--ignore-certificate-errors')
-        return webdriver.Chrome(path_driver, chrome_options=opciones_chrome)
+        opciones_chrome.add_argument("--headless")
+        opciones_chrome.add_argument('--allow-running-insecure-content')
+        opciones_chrome.add_argument("--enable-javascript")
+        opciones_chrome.add_argument('window-size=1920x1080')
+
+        chrome_capabilities = webdriver.DesiredCapabilities().CHROME.copy()
+        chrome_capabilities['acceptSslCerts'] = True 
+        chrome_capabilities['acceptInsecureCerts'] = True
+
+        return webdriver.Chrome(path_driver, chrome_options=opciones_chrome, 
+        desired_capabilities=chrome_capabilities)
 
     # funcion el cual permite navegar hacia la url que se establezca como parametro
     @staticmethod
@@ -62,26 +90,27 @@ class SeleniumTesting:
         
         resultado = Result()
         resultado.tiempo_inicio_de_ejecucion = 0
-        print('ingresando a la siguiente url: "{}"'.format(url_a_navegar))
+        resultado.inicializar_tiempo_de_ejecucion()
+        
+        SeleniumTesting.log.info('ingresando a la siguiente url: "{}"'.format(url_a_navegar))
         try:
             webdriver.set_page_load_timeout(20)
             webdriver.get(url_a_navegar)
             resultado.mensaje_error = 'Se ingresa al sitio con exito'
             resultado.validacion_correcta = True
-            print(resultado.mensaje_error)
+            SeleniumTesting.log.info(resultado.mensaje_error)
         except WebDriverException as e:
             resultado.mensaje_error = 'No se puede ingresar al sitio, favor de verificar la red'
             resultado.validacion_correcta = False
-            print(resultado.mensaje_error)
+            SeleniumTesting.log.error(resultado.mensaje_error)
         except TimeoutException as e:
             resultado.mensaje_error = 'Han transcurrido mas de 20 segundos sin'\
                                       ' poder acceder al sitio: {}'.format(e.msg)
             resultado.validacion_correcta = False
-            print(resultado.mensaje_error)    
+            SeleniumTesting.log.error(resultado.mensaje_error)    
         
         resultado.finalizar_tiempo_de_ejecucion()
         resultado.establecer_tiempo_de_ejecucion()
-
         result_list.result_validacion_ingreso_url = resultado
         return result_list
 
@@ -103,7 +132,7 @@ class SeleniumTesting:
         try:
             # obtiene los elementos html para los campos de usuario, password y el boton de inicio de
             # sesion
-            time.sleep(2)
+            time.sleep(3)
 
             input_usuario = driver.find_element_by_id('username')
             input_password = driver.find_element_by_id('password')
@@ -122,13 +151,13 @@ class SeleniumTesting:
             time.sleep(3)
 
         except NoSuchElementException:
-            print('No fue posible ingresar al portal, no se encontraron los inputs para credenciales')
             resultado.mensaje_error = 'No fue posible ingresar al portal, no se encontraron los inputs para credenciales'
             resultado.validacion_correcta = True
+            SeleniumTesting.log.error(resultado.mensaje_error)
         except WebDriverException:
             resultado.mensaje_error = 'No se puede ingresar al sitio, favor de verificar la red'
             resultado.validacion_correcta = False
-            print(resultado.mensaje_error)
+            SeleniumTesting.log.error(resultado.mensaje_error)
         
         # verifica que se haya ingresado correctamente al OWA, se localiza si esta establecido
         # el mensaje de error de credenciales dentro del aplicativo del OWA
@@ -136,20 +165,20 @@ class SeleniumTesting:
         if resultado.validacion_correcta == False:
             try:
                 mensaje_error_de_credenciales = driver.find_element_by_id('trInvCrd')
-                print('No se puede ingresar al aplicativo debido a error de credenciales:')
+                SeleniumTesting.log.error('No se puede ingresar al aplicativo debido a error de credenciales:')
                 mensaje_error_de_credenciales = driver.find_element_by_xpath("//tr[@id='trInvCrd']/td")
-                print('Se muestra el siguiente mensaje de advertencia: {} '.format(
+                SeleniumTesting.log.error('Se muestra el siguiente mensaje de advertencia: {} '.format(
                     mensaje_error_de_credenciales.get_attribute('innerHTML')))
                 resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
                 resultado.validacion_correcta = False
             except NoSuchElementException:
-                print('Se ingresa correctamente al OWA')
                 resultado.mensaje_error = 'Se ingresa correctamente al OWA'
                 resultado.validacion_correcta = True
+                SeleniumTesting.log.info(resultado.mensaje_error)
             except InvalidSessionIdException:
-                print('No se puede ingresar al portal. No se establecio la conexion correctamente')
-                resultado.mensaje_error = 'No se puede ingresar al portal. Error de conexion'
+                resultado.mensaje_error = 'No se ingreso correctamente al portal. Error de conexion'
                 resultado.validacion_correcta = False
+                SeleniumTesting.log.error(resultado.mensaje_error)
 
 
         resultado.finalizar_tiempo_de_ejecucion()
@@ -167,11 +196,11 @@ class SeleniumTesting:
 
         try:
             elemento_html = driver.find_element_by_id(id)
-            print('Se localiza el elemento {} correctamente'.format(elemento_html.id))
+            SeleniumTesting.log.info('Se localiza el elemento {} correctamente'.format(elemento_html.id))
             return True
         except NoSuchElementException as e:
-            print('No se encontro el elemento con el id: {}'.format(id))
-            print(e)
+            SeleniumTesting.log.error('No se encontro el elemento con el id: {}'.format(id))
+            SeleniumTesting.log.error(e)
             return False 
 
 
@@ -182,13 +211,12 @@ class SeleniumTesting:
         lista_de_carpetas_localizadas = [] 
         lista_nombres_de_carpetas_formateadas = []  
 
-        time.sleep(5)
+        time.sleep(8)
         lista_de_carpetas_localizadas = driver.find_elements_by_xpath("//*[@id='spnFldrNm']")
 
         for carpeta in lista_de_carpetas_localizadas:
             nombre_de_carpeta = FormatUtils.remover_backspaces(carpeta.get_attribute('innerHTML')) 
-            print('Se obtiene la carpeta: {}'.format(nombre_de_carpeta))
-
+            SeleniumTesting.log.info('Se obtiene la carpeta: {}'.format(nombre_de_carpeta))
             lista_nombres_de_carpetas_formateadas.append(nombre_de_carpeta)
         
         return lista_nombres_de_carpetas_formateadas
@@ -213,7 +241,7 @@ class SeleniumTesting:
             result_navegacion_carpetas.validacion_correcta = False
             result_navegacion_carpetas.mensaje_error = 'No se encontraron carpetas dentro de la sesion'
             result_list.result_validacion_navegacion_carpetas = result_navegacion_carpetas
-            print('No se encontraron carpetas por navegar')
+            SeleniumTesting.log.info('No se encontraron carpetas por navegar')
 
             return result_list
 
@@ -222,10 +250,10 @@ class SeleniumTesting:
                 segundos = Temporizador.obtener_tiempo_timer() - tiempo_de_inicio  
 
                 if segundos > numero_de_segundos:
-                    print('Han transcurrido 2 minutos, se procede a cerrar la sesion')
+                    SeleniumTesting.log.info('Han transcurrido 2 minutos, se procede a cerrar la sesion')
                     break
 
-                print('Ingresando a la carpeta: {}'.format(carpeta))
+                SeleniumTesting.log.info('Ingresando a la carpeta: {}'.format(carpeta))
 
                 try:     
                     elemento_html_carpeta = driver.find_element_by_xpath(
@@ -236,13 +264,18 @@ class SeleniumTesting:
                     time.sleep(3)
                     elemento_html_carpeta.click()
                 except StaleElementReferenceException as e:
-                    print('Una de las carpetas no se localiza, se intentara ingresar nuevamente')
-                    print('error: {}'.format(e.msg))
+                    SeleniumTesting.log.error('Una de las carpetas no se localiza, se intentara ingresar nuevamente')
+                    SeleniumTesting.log.error('error: {}'.format(e.msg))
                     driver.refresh()
                     time.sleep(3)
                 except ElementClickInterceptedException as e:
-                    print('Una de las carpetas no se localiza, se intentara ingresar nuevamente')
-                    print('error: {}'.format(e.msg))
+                    SeleniumTesting.log.error('Una de las carpetas no se localiza, se intentara ingresar nuevamente')
+                    SeleniumTesting.log.error('error: {}'.format(e.msg))
+                    driver.refresh()
+                    time.sleep(3)
+                except NoSuchElementException as e:
+                    SeleniumTesting.log.error('Una de las carpetas no se localiza, se intentara ingresar nuevamente')
+                    SeleniumTesting.log.error('error: {}'.format(e.msg))
                     driver.refresh()
                     time.sleep(3)
         
@@ -258,15 +291,15 @@ class SeleniumTesting:
     @staticmethod
     def verificar_dialogo_de_interrupcion(driver, result):
         if len(driver.find_elements_by_id('divPont')) > 0:
-                print('Se ha encontrado un dialogo informativo, se procede a cerrarlo')
+                SeleniumTesting.log.info('Se ha encontrado un dialogo informativo, se procede a cerrarlo')
                 
                 try:
                     time.sleep(4)
                     boton_remover_dialogo = driver.find_element_by_id('imgX')
                     boton_remover_dialogo.click()
                 except ElementClickInterceptedException:
-                    print('Se encontro un dialogo informativo pero fue imposible cerrarlo.')
-                    print('Se intenta nuevamente el cierre del dialogo')
+                    SeleniumTesting.log.error('Se encontro un dialogo informativo pero fue imposible cerrarlo.')
+                    SeleniumTesting.log.error('Se intenta nuevamente el cierre del dialogo')
                     SeleniumTesting.verificar_dialogo_de_interrupcion(driver, result)
 
         
@@ -280,7 +313,12 @@ class SeleniumTesting:
         elemento_html_btn_cerrar_sesion = None
 
         try:
+            driver.refresh()
             time.sleep(3)
+
+            # verifica que no haya algun dialogo que impida el cierre de sesion
+            SeleniumTesting.verificar_dialogo_de_interrupcion(driver, resultado_cierre_sesion)
+            
             elemento_html_btn_cerrar_sesion = driver.find_element_by_id('aLogOff')
             elemento_html_btn_cerrar_sesion.click()
             time.sleep(8)
@@ -289,20 +327,27 @@ class SeleniumTesting:
             url_actual = driver.current_url
 
         except NoSuchElementException as e:
-            print('Error al salir de la sesion, no se localizo la opcion para el cierre de sesion')
+            SeleniumTesting.log.error('Error al salir de la sesion, no se localizo la opcion para el cierre de sesion')
             resultado_cierre_sesion.mensaje_error = 'No fue posible cerrar la sesion correctamente'
             resultado_cierre_sesion.validacion_correcta = False
+        except ElementClickInterceptedException as e:
+            SeleniumTesting.log.error('Error al salir de la sesion, no fue posible dar clic en la opcion de cierre de sesion')
+            SeleniumTesting.log.error('Se intentara nuevamente el cierre de sesion')
+            driver.refresh()
+            time.sleep(2)
+            SeleniumTesting.cerrar_sesion(driver, result_list)
         finally:
             driver.close()
             driver.quit()
 
         if 'exchangeadministrado.com/owa/auth/logoff.aspx' in url_actual:
-            print('Se cierra con exito la sesion')
+            SeleniumTesting.log.info('Se cierra con exito la sesion')
             resultado_cierre_sesion.mensaje_error = 'Se cierra la sesion exitosamente'
             resultado_cierre_sesion.validacion_correcta = True
         else:
             resultado_cierre_sesion.mensaje_error = 'No fue posible cerrar la sesion correctamente'
             resultado_cierre_sesion.validacion_correcta = False
+            SeleniumTesting.log.error(resultado_cierre_sesion.mensaje_error)
 
         resultado_cierre_sesion.finalizar_tiempo_de_ejecucion()
         resultado_cierre_sesion.establecer_tiempo_de_ejecucion()

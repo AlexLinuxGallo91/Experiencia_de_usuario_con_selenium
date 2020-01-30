@@ -1,4 +1,5 @@
 import configparser
+import logging
 
 class FormatUtils:
 
@@ -6,17 +7,18 @@ class FormatUtils:
     NOMBRE_ARCHIVO_CONFIGURACION = 'config.ini'
     BACKSPACE = '&nbsp;'
     ESPACIO = ' '
+    log = logging.getLogger(__name__)
 
     # lector de propiedades dentro de un archivo ini
     @staticmethod
-    def lector_archivo_ini(path_archivo_ini):
+    def lector_archivo_ini():
         config = None
 
         try:
             config = configparser.ConfigParser()
             config.read(FormatUtils.NOMBRE_ARCHIVO_CONFIGURACION)
         except Error as e:
-            print('sucedio un error al leer el archivo de configuracion: {}'.format(e))
+            FormatUtils.log.error('sucedio un error al leer el archivo de configuracion: {}'.format(e))
         
         return config
             

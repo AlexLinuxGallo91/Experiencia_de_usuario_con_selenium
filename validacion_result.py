@@ -25,7 +25,18 @@ class Result:
         self.datetime_final = Temporizador.obtener_fecha_tiempo_actual()
         self.tiempo_fin_de_ejecucion = Temporizador.obtener_tiempo_timer()
         self.establecer_tiempo_de_ejecucion()
-    
+
+    def __str__(self):
+        cadena = ''
+        cadena += 'validacion_correcta : {self.validacion_correcta}\n'.format(self=self)
+        cadena += 'mensaje_error : {self.mensaje_error}\n'.format(self=self)
+        cadena += 'tiempo_inicio_de_ejecucion : {self.tiempo_inicio_de_ejecucion}\n'.format(self=self)
+        cadena += 'tiempo_fin_de_ejecucion : {self.tiempo_fin_de_ejecucion}\n'.format(self=self)
+        cadena += 'tiempo_total_de_la_ejecucion : {self.tiempo_total_de_la_ejecucion}\n'.format(self=self)
+        cadena += 'datetime_inicial : {self.datetime_inicial}\n'.format(self=self)
+        cadena += 'datetime_final : {self.datetime_final}\n'.format(self=self)
+
+        return cadena
     
 class EvaluacionStepsJson:
 
@@ -56,7 +67,8 @@ class EvaluacionStepsJson:
         # establece el tiempo total de la ejecucion de ambos steps
         result_final.tiempo_inicio_de_ejecucion = result_url.tiempo_inicio_de_ejecucion
         result_final.tiempo_fin_de_ejecucion = result_sesion.tiempo_fin_de_ejecucion
-        # result_final.establecer_tiempo_de_ejecucion()
+        
+        # establece el tiempo total de ejecucion
         result_final.establecer_tiempo_de_ejecucion()
 
         objeto_json['steps'][0]['status'] = constantes_json.STATUS_CORRECTO if \
@@ -84,7 +96,7 @@ class EvaluacionStepsJson:
         objeto_json['steps'][1]['start'] = validacion_result.datetime_inicial
         objeto_json['steps'][1]['end'] = validacion_result.datetime_final
         objeto_json['steps'][1]['time'] = validacion_result.tiempo_total_de_la_ejecucion
-
+        
         return objeto_json
 
     
@@ -101,6 +113,7 @@ class EvaluacionStepsJson:
 
         return objeto_json
 
+
     @staticmethod
     def establecer_fecha_tiempo_de_inicio(objeto_json):
         objeto_json['start'] = Temporizador.obtener_fecha_tiempo_actual()
@@ -114,6 +127,7 @@ class EvaluacionStepsJson:
         objeto_json['end'] = Temporizador.obtener_fecha_tiempo_actual()
 
         return objeto_json
+
     
     @staticmethod
     def formar_cuerpo_json(result_list, objeto_json):
@@ -133,10 +147,12 @@ class EvaluacionStepsJson:
         objeto_json = EvaluacionStepsJson.validacion_json_cierre_sesion(
             result_list.result_validacion_cierre_sesion, objeto_json)
 
-        suma_total_tiempo = 0
-        suma_total_tiempo = suma_total_tiempo + objeto_json['steps'][0]['time']
-        suma_total_tiempo = suma_total_tiempo + objeto_json['steps'][1]['time']
-        suma_total_tiempo = suma_total_tiempo + objeto_json['steps'][2]['time']
+        tiempo_inicio_de_sesion = objeto_json['steps'][0]['time']
+        tiempo_navegacion_carpetas = objeto_json['steps'][1]['time']
+        tiempo_cierre_de_sesion = objeto_json['steps'][2]['time']
+
+        suma_total_tiempo = tiempo_inicio_de_sesion + tiempo_navegacion_carpetas + \
+                            tiempo_cierre_de_sesion
 
         objeto_json['time'] = suma_total_tiempo
 

@@ -11,9 +11,9 @@ class DbUtils:
                                       'modif_date, deleted FROM itoc_cat_accounts'
 
     @staticmethod
-    def leer_datos_conexion_db(path_archivo_config_ini):
+    def leer_datos_conexion_db():
         datos_db = DatosConexionDB()
-        config = format_utils.FormatUtils.lector_archivo_ini(path_archivo_config_ini)
+        config = format_utils.FormatUtils.lector_archivo_ini()
         
         datos_db.user = config.get('DatosConexionBaseDeDatos', 'user')
         datos_db.password = config.get('DatosConexionBaseDeDatos', 'password')
@@ -24,7 +24,7 @@ class DbUtils:
     
     @staticmethod
     def generar_conexion_a_db():
-        datos_conexion_db = DbUtils.leer_datos_conexion_db('config.ini')
+        datos_conexion_db = DbUtils.leer_datos_conexion_db()
         conexion_db = None
         try:
             conexion_db = mysql.connector.connect(user=datos_conexion_db.user,
