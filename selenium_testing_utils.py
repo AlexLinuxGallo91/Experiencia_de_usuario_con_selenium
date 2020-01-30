@@ -14,6 +14,7 @@ from correo import Correo
 from format_utils import FormatUtils
 from temporizador import Temporizador
 from validacion_result import Result
+import constantes_json
 import logging
 import mysql.connector
 import json
@@ -99,15 +100,15 @@ class SeleniumTesting:
             resultado.mensaje_error = 'Se ingresa al sitio con exito'
             resultado.validacion_correcta = True
             SeleniumTesting.log.info(resultado.mensaje_error)
-        except WebDriverException as e:
-            resultado.mensaje_error = 'No se puede ingresar al sitio, favor de verificar la red'
-            resultado.validacion_correcta = False
-            SeleniumTesting.log.error(resultado.mensaje_error)
         except TimeoutException as e:
             resultado.mensaje_error = 'Han transcurrido mas de 20 segundos sin'\
                                       ' poder acceder al sitio: {}'.format(e.msg)
             resultado.validacion_correcta = False
             SeleniumTesting.log.error(resultado.mensaje_error)    
+        except WebDriverException as e:
+            resultado.mensaje_error = 'No se puede ingresar al sitio, favor de verificar la red'
+            resultado.validacion_correcta = False
+            SeleniumTesting.log.error(resultado.mensaje_error)
         
         resultado.finalizar_tiempo_de_ejecucion()
         resultado.establecer_tiempo_de_ejecucion()
@@ -172,7 +173,7 @@ class SeleniumTesting:
                 resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
                 resultado.validacion_correcta = False
             except NoSuchElementException:
-                resultado.mensaje_error = 'Se ingresa correctamente al OWA'
+                resultado.mensaje_error = constantes_json.OUTPUT_EXITOSO_1_1
                 resultado.validacion_correcta = True
                 SeleniumTesting.log.info(resultado.mensaje_error)
             except InvalidSessionIdException:
@@ -282,7 +283,7 @@ class SeleniumTesting:
         result_navegacion_carpetas.finalizar_tiempo_de_ejecucion()
         result_navegacion_carpetas.establecer_tiempo_de_ejecucion()
         result_navegacion_carpetas.validacion_correcta = True
-        result_navegacion_carpetas.mensaje_error = 'Se navega correctamente en las carpetas de la cuenta'
+        result_navegacion_carpetas.mensaje_error = constantes_json.OUTPUT_EXITOSO_2_1
         result_list.result_validacion_navegacion_carpetas = result_navegacion_carpetas
         return result_list
                 
@@ -342,7 +343,7 @@ class SeleniumTesting:
 
         if 'exchangeadministrado.com/owa/auth/logoff.aspx' in url_actual:
             SeleniumTesting.log.info('Se cierra con exito la sesion')
-            resultado_cierre_sesion.mensaje_error = 'Se cierra la sesion exitosamente'
+            resultado_cierre_sesion.mensaje_error = constantes_json.OUTPUT_EXITOSO_3_1
             resultado_cierre_sesion.validacion_correcta = True
         else:
             resultado_cierre_sesion.mensaje_error = 'No fue posible cerrar la sesion correctamente'

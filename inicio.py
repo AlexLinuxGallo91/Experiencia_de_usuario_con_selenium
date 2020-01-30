@@ -12,6 +12,7 @@ from statusJson import JsonPorEnviar
 from validacion_result import Result
 from validacion_result import EvaluacionStepsJson
 from validacion_result import ValidacionResultList
+import configparser
 import sys
 import logging
 import time
@@ -92,14 +93,25 @@ def iniciar_prueba(correo):
     
     # obtiene los datos del archivo de configuracion
     archivo_configuracion_ini = FormatUtils.lector_archivo_ini()
-    url_exchange = archivo_configuracion_ini.get('UrlPorProbar','urlPortalExchange')
-    driver_por_usar = archivo_configuracion_ini.get('Driver', 'driverPorUtilizar')
-    ruta_driver_navegador = archivo_configuracion_ini.get('Driver', 'ruta')
+    url_exchange = FormatUtils.CADENA_VACIA
+    driver_por_usar = FormatUtils.CADENA_VACIA
+    ruta_driver_navegador = FormatUtils.CADENA_VACIA
     driver = None
     objeto_json = None
 
+    try:
+        url_exchange = archivo_configuracion_ini.get('UrlPorProbar','urlPortalExchange')
+        driver_por_usar = archivo_configuracion_ini.get('Driver', 'driverPorUtilizar')
+        ruta_driver_navegador = archivo_configuracion_ini.get('Driver', 'ruta')
+    except configparser.Error as e:
+        logging.error('Sucedio un error al momento de leer el archivo de configuracion')
+        logging.error('{}'.format(e.message))
+        sys.exit()
+
     # lista de carpetas por navegar (estos los obtenemos por medio del webdriver)
     carpetas_formateadas = []
+
+    # obtiene los datos necesarios desde el archivo de configuracion
 
     # establece el driver por utilizar (chrome o firefox)
     driver = configurar_webdriver(driver_por_usar, ruta_driver_navegador)
@@ -118,8 +130,9 @@ def main():
 
     # verifica que al menos se hayan ingresado dos argumentos
     if len(argumentos) != 2:
+        print('favor de ingresar correo y password')
         logging.info('favor de ingresar correo y password')
-        return exit(1)
+        sys.exit()
     else:
         correo_a_probar = Correo(argumentos[0],argumentos[1])
         logging.info('cuenta por analizar: {}'.format(correo_a_probar))

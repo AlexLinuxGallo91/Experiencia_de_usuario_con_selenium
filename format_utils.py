@@ -17,7 +17,7 @@ class FormatUtils:
         try:
             config = configparser.ConfigParser()
             config.read(FormatUtils.NOMBRE_ARCHIVO_CONFIGURACION)
-        except Error as e:
+        except configparser.Error as e:
             FormatUtils.log.error('sucedio un error al leer el archivo de configuracion: {}'.format(e))
         
         return config
