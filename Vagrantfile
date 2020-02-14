@@ -45,14 +45,14 @@ Vagrant.configure("2") do |config|
     sudo pip3 install mysql-connector-python
 
     # instala MYSQL 
-    debconf-set-selections <<< 'mysql-server mysql-server/root_password password root'
-    debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password root'
-    apt-get update
-    apt-get install -y mysql-server
+    # debconf-set-selections <<< 'mysql-server mysql-server/root_password password root'
+    # debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password root'
+    # apt-get update
+    # apt-get install -y mysql-server
 
     # ejecuta el script de python (ETL) para la creacion de la base, tabla e insercion de datos
-    cd /vagrant_data
-    python3 insercion_datos_mysql.py
+    # cd /vagrant_data
+    # python3 insercion_datos_mysql.py
 
   SHELL
 end

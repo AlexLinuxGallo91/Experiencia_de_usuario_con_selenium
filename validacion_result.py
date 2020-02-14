@@ -90,9 +90,13 @@ class EvaluacionStepsJson:
     @staticmethod
     def validacion_json_navegacion_carpetas(validacion_result, objeto_json):
 
-        objeto_json['steps'][1]['status'] = constantes_json.STATUS_CORRECTO
+        objeto_json['steps'][1]['status'] = constantes_json.STATUS_CORRECTO if \
+            validacion_result.validacion_correcta else constantes_json.STATUS_FALLIDO
+
         objeto_json['steps'][1]['output'][0]['output'] = validacion_result.mensaje_error
-        objeto_json['steps'][1]['output'][0]['status'] = constantes_json.STATUS_CORRECTO
+        objeto_json['steps'][1]['output'][0]['status'] = constantes_json.STATUS_CORRECTO if \
+            validacion_result.validacion_correcta else constantes_json.STATUS_FALLIDO
+
         objeto_json['steps'][1]['start'] = validacion_result.datetime_inicial
         objeto_json['steps'][1]['end'] = validacion_result.datetime_final
         objeto_json['steps'][1]['time'] = validacion_result.tiempo_total_de_la_ejecucion
@@ -104,9 +108,13 @@ class EvaluacionStepsJson:
     @staticmethod
     def validacion_json_cierre_sesion(validacion_result, objeto_json):
 
-        objeto_json['steps'][2]['status'] = constantes_json.STATUS_CORRECTO
+        objeto_json['steps'][2]['status'] = constantes_json.STATUS_CORRECTO if \
+            validacion_result.validacion_correcta else constantes_json.STATUS_FALLIDO
+
         objeto_json['steps'][2]['output'][0]['output'] = validacion_result.mensaje_error
-        objeto_json['steps'][2]['output'][0]['status'] = constantes_json.STATUS_CORRECTO
+        objeto_json['steps'][2]['output'][0]['status'] = constantes_json.STATUS_CORRECTO if \
+            validacion_result.validacion_correcta else constantes_json.STATUS_FALLIDO
+
         objeto_json['steps'][2]['start'] = validacion_result.datetime_inicial
         objeto_json['steps'][2]['end'] = validacion_result.datetime_final
         objeto_json['steps'][2]['time'] = validacion_result.tiempo_total_de_la_ejecucion

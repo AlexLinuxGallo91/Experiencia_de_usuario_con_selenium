@@ -28,6 +28,9 @@ class SeleniumTesting:
     # con el uso del navefador Mozilla Firefox
     @staticmethod
     def inicializar_webdriver_firefox(path_driver):
+        #ruta para deshabilitar log inecesario del geckodriver
+        ruta_log_null = '/dev/null'
+
         opciones_firefox = webdriver.FirefoxOptions()
         perfil_firefox = webdriver.FirefoxProfile()
         firefox_capabilities = webdriver.DesiredCapabilities().FIREFOX.copy()
@@ -46,7 +49,8 @@ class SeleniumTesting:
         return webdriver.Firefox(executable_path=path_driver, 
                                  firefox_options=opciones_firefox, 
                                  firefox_profile=perfil_firefox,
-                                 capabilities=firefox_capabilities)
+                                 capabilities=firefox_capabilities,
+                                 service_log_path=ruta_log_null)
 
 
     # inicializa un nuevo driver (chrome driver) para la experiencia de usuario
@@ -240,7 +244,7 @@ class SeleniumTesting:
             result_navegacion_carpetas.finalizar_tiempo_de_ejecucion()
             result_navegacion_carpetas.establecer_tiempo_de_ejecucion()
             result_navegacion_carpetas.validacion_correcta = False
-            result_navegacion_carpetas.mensaje_error = 'No se encontraron carpetas dentro de la sesion'
+            result_navegacion_carpetas.mensaje_error = 'No se encontraron carpetas dentro de la sesi\u00f3n'
             result_list.result_validacion_navegacion_carpetas = result_navegacion_carpetas
             SeleniumTesting.log.info('No se encontraron carpetas por navegar')
 
@@ -329,7 +333,7 @@ class SeleniumTesting:
 
         except NoSuchElementException as e:
             SeleniumTesting.log.error('Error al salir de la sesion, no se localizo la opcion para el cierre de sesion')
-            resultado_cierre_sesion.mensaje_error = 'No fue posible cerrar la sesion correctamente'
+            resultado_cierre_sesion.mensaje_error = 'No fue posible cerrar la sesi\u00f3n correctamente'
             resultado_cierre_sesion.validacion_correcta = False
         except ElementClickInterceptedException as e:
             SeleniumTesting.log.error('Error al salir de la sesion, no fue posible dar clic en la opcion de cierre de sesion')
