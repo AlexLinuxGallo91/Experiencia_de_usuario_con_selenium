@@ -125,11 +125,8 @@ def main():
 
     # verifica que el archivo del log, exista
     if os.path.exists(nombre_archivo_log):
-        print('entro')
         # verifica el tamaño del archivo del log que no revase los 20mb
         if os.path.getsize('log_exchange_owa')/(1024*1024) > 20:
-            print(os.path.getsize('log_exchange_owa')/(1024*1024))
-
             archivo_log = open(nombre_archivo_log, 'a')
             archivo_log.truncate(0)
             archivo_log.close()
