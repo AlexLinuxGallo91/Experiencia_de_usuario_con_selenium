@@ -18,13 +18,7 @@ import logging
 import time
 import json
 import datetime
-
-#inicializa el logging
-logging.basicConfig(level=logging.INFO, 
-                    filename='log_exchange_owa', 
-                    filemode='a', 
-                    format='%(asctime)s  %(name)s  %(levelname)s: %(message)s', 
-                    datefmt='%d-%m-%YT%H:%M:%S')
+import os
                     
 correos_obtenidos = []
 
@@ -127,6 +121,25 @@ def main():
 
     argumentos = sys.argv[1:]
     correo_a_probar = None
+    nombre_archivo_log = 'log_exchange_owa'
+
+    # verifica que el archivo del log, exista
+    if os.path.exists(nombre_archivo_log):
+        print('entro')
+        # verifica el tamaño del archivo del log que no revase los 20mb
+        if os.path.getsize('log_exchange_owa')/(1024*1024) > 20:
+            print(os.path.getsize('log_exchange_owa')/(1024*1024))
+
+            archivo_log = open(nombre_archivo_log, 'a')
+            archivo_log.truncate(0)
+            archivo_log.close()
+
+    #inicializa el logging
+    logging.basicConfig(level=logging.INFO, 
+                        filename='log_exchange_owa', 
+                        filemode='a', 
+                        format='%(asctime)s  %(name)s  %(levelname)s: %(message)s', 
+                        datefmt='%d-%m-%YT%H:%M:%S')
 
     # verifica que al menos se hayan ingresado dos argumentos
     if len(argumentos) != 2:
