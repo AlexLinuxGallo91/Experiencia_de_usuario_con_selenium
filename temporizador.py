@@ -14,7 +14,7 @@ class Temporizador:
     @staticmethod
     def obtener_fecha_tiempo_actual():
         fecha_actual = datetime.datetime.now()
-        return fecha_actual.strftime('%Y-%m-%dT%H:%M-06:00')
+        return fecha_actual.strftime('%Y-%m-%dT%H:%M:%S-06:00')
 
     
     
