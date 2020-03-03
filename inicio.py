@@ -83,18 +83,17 @@ def generar_test_json(driver, url_a_navegar, correo):
 
     return objeto_json
 
-def iniciar_prueba(correo):
+def iniciar_prueba(correo, url_exchange):
     
     # obtiene los datos del archivo de configuracion
     archivo_configuracion_ini = FormatUtils.lector_archivo_ini()
-    url_exchange = FormatUtils.CADENA_VACIA
     driver_por_usar = FormatUtils.CADENA_VACIA
     ruta_driver_navegador = FormatUtils.CADENA_VACIA
     driver = None
     objeto_json = None
 
     try:
-        url_exchange = archivo_configuracion_ini.get('UrlPorProbar','urlPortalExchange')
+        # url_exchange = archivo_configuracion_ini.get('UrlPorProbar','urlPortalExchange')
         driver_por_usar = archivo_configuracion_ini.get('Driver', 'driverPorUtilizar')
         ruta_driver_navegador = archivo_configuracion_ini.get('Driver', 'ruta')
     except configparser.Error as e:
@@ -139,15 +138,16 @@ def main():
                         datefmt='%d-%m-%YT%H:%M:%S')
 
     # verifica que al menos se hayan ingresado dos argumentos
-    if len(argumentos) != 2:
-        print('favor de ingresar correo y password')
+    if len(argumentos) != 3:
+        print('favor de ingresar url, correo y password')
         logging.info('favor de ingresar correo y password')
         sys.exit()
     else:
-        correo_a_probar = Correo(argumentos[0],argumentos[1])
+        correo_a_probar = Correo(argumentos[1],argumentos[2])
+        logging.info('url por ingresar: {}'.format(argumentos[0]))
         logging.info('cuenta por analizar: {}'.format(correo_a_probar))
 
-    iniciar_prueba(correo_a_probar)
+    iniciar_prueba(correo_a_probar, argumentos[0])
 
     # Se obtienen los correos a probar
     #lista_cuentas_correos = DbUtils.obtener_lista_cuentas_db()

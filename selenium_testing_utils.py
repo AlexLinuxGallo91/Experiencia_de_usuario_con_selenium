@@ -39,8 +39,8 @@ class SeleniumTesting:
 
         # ignora las certificaciones de seguridad, esto solamente se realiza
         # para la experiencia de usuario
-        #opciones_firefox.add_argument('--ignore-certificate-errors')
-        #opciones_firefox.accept_insecure_certs = True
+        opciones_firefox.add_argument('--ignore-certificate-errors')
+        opciones_firefox.accept_insecure_certs = True
         perfil_firefox.accept_untrusted_certs = True
         perfil_firefox.assume_untrusted_cert_issuer = False
          
