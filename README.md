@@ -61,6 +61,8 @@ password: vagrant
 y podremos ejecutar con exito el script de experiencia de usuario desde la terminal (dentro de la carpeta del proyecto) con el siguiente comando:
 
 ```
-python3 inicio.py
+python3 inicio.py https/www.owaejemplo.com correo@ejemplo.com passwordejemplo
 ```
+
+El Script debe ejecutarse con tres argumentos obligatorios, los cuales son la url del owa por acceder, el correo y el password a usar para ingresar al OWA establecido. 
 
