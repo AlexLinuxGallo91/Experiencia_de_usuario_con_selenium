@@ -28,6 +28,18 @@ class SeleniumTesting:
 
     log = logging.getLogger(__name__)
 
+    # inicializa un nuevo driver (phantomjs) para la experiencia de usuario
+    # con el uso del navegador Phantom JS
+    @staticmethod
+    def inicializar_webdriver_phantom_js(path_driver):
+
+        driver = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true', '--ssl-protocol=any'], 
+                                     executable_path=path_driver)
+        driver.set_window_size(1120,550)
+
+        return driver
+
+
     # inicializa un nuevo driver (firefox) para la experiencia de usuario
     # con el uso del navefador Mozilla Firefox
     @staticmethod
@@ -227,7 +239,6 @@ class SeleniumTesting:
                         ' {}'.format(mensaje_error_de_credenciales)
                     resultado.validacion_correcta = False
             except NoSuchElementException as e:
-                SeleniumTesting.log.info(driver.page_source)
                 resultado.mensaje_error = constantes_json.OUTPUT_EXITOSO_1_1
                 resultado.validacion_correcta = True
                 SeleniumTesting.log.info(resultado.mensaje_error)
@@ -236,9 +247,10 @@ class SeleniumTesting:
                 resultado.validacion_correcta = False
                 SeleniumTesting.log.error(resultado.mensaje_error)
             except JavascriptException as e:
-                resultado.mensaje_error = 'No se ingreso correctamente al portal. Error de credenciales: {}'.format(e.msg)
-                resultado.validacion_correcta = False
-                SeleniumTesting.log.error(resultado.mensaje_error)
+                # Esto es debido a que no se encontro el mensaje de error de credenciales incorrectas
+                resultado.mensaje_error = constantes_json.OUTPUT_EXITOSO_1_1
+                resultado.validacion_correcta = True
+                SeleniumTesting.log.info(resultado.mensaje_error)
 
         resultado.finalizar_tiempo_de_ejecucion()
         resultado.establecer_tiempo_de_ejecucion()
@@ -396,6 +408,16 @@ class SeleniumTesting:
                             driver, result_navegacion_carpetas)
                         time.sleep(3)
                         elemento_html_carpeta.click()
+                    elif SeleniumTesting.owa_descubierto == 2013:
+                        script_click_carpeta = \
+                        '''
+                            var carpeta = document.querySelector("span._n_Z6[title='{}']");
+                            return carpeta;
+                        '''.format(carpeta)
+
+                        elemento_html_carpeta = driver.execute_script(script_click_carpeta)
+                        elemento_html_carpeta.click()
+                        time.sleep(6)
 
                 except StaleElementReferenceException as e:
                     SeleniumTesting.log.error(
