@@ -32,7 +32,7 @@ class SeleniumTesting:
     @staticmethod
     def inicializar_webdriver_firefox(path_driver):
         #ruta para deshabilitar log inecesario del geckodriver
-        #ruta_log_null = '/dev/null'
+        ruta_log_null = '/dev/null'
 
         opciones_firefox = webdriver.FirefoxOptions()
         perfil_firefox = webdriver.FirefoxProfile()
@@ -54,7 +54,7 @@ class SeleniumTesting:
                                  firefox_options=opciones_firefox,
                                  firefox_profile=perfil_firefox,
                                  capabilities=firefox_capabilities,
-                                 #service_log_path=ruta_log_null
+                                 service_log_path=ruta_log_null
                                  )
 
     # inicializa un nuevo driver (chrome driver) para la experiencia de usuario
@@ -104,7 +104,7 @@ class SeleniumTesting:
         SeleniumTesting.log.info(
             'ingresando a la siguiente url: "{}"'.format(url_a_navegar))
         try:
-            webdriver.set_page_load_timeout(60)
+            webdriver.set_page_load_timeout(100)
             webdriver.get(url_a_navegar)
             resultado.mensaje_error = 'Se ingresa al sitio "{}" con exito'.format(
                 url_a_navegar)
@@ -200,16 +200,29 @@ class SeleniumTesting:
 
         if resultado.validacion_correcta == False:
             try:
-                mensaje_error_de_credenciales = driver.find_element_by_id(
-                    'trInvCrd')
-                SeleniumTesting.log.error(
-                    'No se puede ingresar al aplicativo debido a error de credenciales:')
-                mensaje_error_de_credenciales = driver.find_element_by_xpath(
-                    "//tr[@id='trInvCrd']/td")
-                SeleniumTesting.log.error('Se muestra el siguiente mensaje de advertencia: {} '.format(
-                    mensaje_error_de_credenciales.get_attribute('innerHTML')))
-                resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
-                resultado.validacion_correcta = False
+
+                if(SeleniumTesting.owa_descubierto == 2010):
+                    mensaje_error_de_credenciales = driver.find_element_by_id(
+                        'trInvCrd')
+                    SeleniumTesting.log.error(
+                        'No se puede ingresar al aplicativo debido a error de credenciales:')
+                    mensaje_error_de_credenciales = driver.find_element_by_xpath(
+                        "//tr[@id='trInvCrd']/td")
+                    SeleniumTesting.log.error('Se muestra el siguiente mensaje de advertencia: {} '.format(
+                        mensaje_error_de_credenciales.get_attribute('innerHTML')))
+                    resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
+                    resultado.validacion_correcta = False
+                else:
+                    mensaje_error_de_credenciales = driver.find_element_by_id(
+                        'signInErrorDiv')
+                    SeleniumTesting.log.error(
+                        'No se puede ingresar al aplicativo debido a error de credenciales:')
+                    mensaje_error_de_credenciales = driver.find_element_by_xpath(
+                        "//div[@id='signInErrorDiv']")
+                    SeleniumTesting.log.error('Se muestra el siguiente mensaje de advertencia: {} '.format(
+                        mensaje_error_de_credenciales.get_attribute('innerHTML')))
+                    resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
+                    resultado.validacion_correcta = False
             except NoSuchElementException:
                 resultado.mensaje_error = constantes_json.OUTPUT_EXITOSO_1_1
                 resultado.validacion_correcta = True
