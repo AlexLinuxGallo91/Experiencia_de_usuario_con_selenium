@@ -8,6 +8,7 @@ from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import WebDriverException
 from selenium.common.exceptions import InvalidSessionIdException
+from selenium.common.exceptions import JavascriptException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from validacion_result import ValidacionResultList
 from correo import Correo
@@ -183,11 +184,10 @@ class SeleniumTesting:
             boton_ingreso_correo.send_keys(Keys.RETURN)
 
             time.sleep(8)
-
         except NoSuchElementException as e:
             resultado.mensaje_error = 'No fue posible ingresar al portal, no se encontraron los inputs para credenciales: {}'.format(
                 e.msg)
-            resultado.validacion_correcta = True
+            resultado.validacion_correcta = False
             SeleniumTesting.log.error(resultado.mensaje_error)
         except WebDriverException as e:
             resultado.mensaje_error = 'No se puede ingresar al sitio, favor de verificar la red: {}'.format(
@@ -201,7 +201,7 @@ class SeleniumTesting:
         if resultado.validacion_correcta == False:
             try:
 
-                if(SeleniumTesting.owa_descubierto == 2010):
+                if SeleniumTesting.owa_descubierto == 2010:
                     mensaje_error_de_credenciales = driver.find_element_by_id(
                         'trInvCrd')
                     SeleniumTesting.log.error(
@@ -212,23 +212,31 @@ class SeleniumTesting:
                         mensaje_error_de_credenciales.get_attribute('innerHTML')))
                     resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
                     resultado.validacion_correcta = False
-                else:
-                    mensaje_error_de_credenciales = driver.find_element_by_id(
-                        'signInErrorDiv')
+                elif SeleniumTesting.owa_descubierto == 2016:
+                    mensaje_error_de_credenciales = driver.execute_script(
+                    '''
+                    var mensaje_error = document.querySelector("#signInErrorDiv").innerText;
+                    return mensaje_error;
+                    '''
+                    )
                     SeleniumTesting.log.error(
                         'No se puede ingresar al aplicativo debido a error de credenciales:')
-                    mensaje_error_de_credenciales = driver.find_element_by_xpath(
-                        "//div[@id='signInErrorDiv']")
                     SeleniumTesting.log.error('Se muestra el siguiente mensaje de advertencia: {} '.format(
-                        mensaje_error_de_credenciales.get_attribute('innerHTML')))
-                    resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
+                        mensaje_error_de_credenciales))
+                    resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'\
+                        ' {}'.format(mensaje_error_de_credenciales)
                     resultado.validacion_correcta = False
-            except NoSuchElementException:
+            except NoSuchElementException as e:
+                SeleniumTesting.log.info(driver.page_source)
                 resultado.mensaje_error = constantes_json.OUTPUT_EXITOSO_1_1
                 resultado.validacion_correcta = True
                 SeleniumTesting.log.info(resultado.mensaje_error)
             except InvalidSessionIdException:
                 resultado.mensaje_error = 'No se ingreso correctamente al portal. Error de conexion'
+                resultado.validacion_correcta = False
+                SeleniumTesting.log.error(resultado.mensaje_error)
+            except JavascriptException as e:
+                resultado.mensaje_error = 'No se ingreso correctamente al portal. Error de credenciales: {}'.format(e.msg)
                 resultado.validacion_correcta = False
                 SeleniumTesting.log.error(resultado.mensaje_error)
 
