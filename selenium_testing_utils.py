@@ -422,19 +422,34 @@ class SeleniumTesting:
                     SeleniumTesting.log.error(
                         'Una de las carpetas no se localiza, se intentara ingresar nuevamente')
                     SeleniumTesting.log.error('error: {}'.format(e.msg))
-                    driver.refresh()
+                    
+                    try:
+                        driver.refresh()
+                    except TimeoutException as e:
+                        SeleniumTesting.log.error('Sucedio error al refrescar pagina')
+                    
                     time.sleep(3)
                 except ElementClickInterceptedException as e:
                     SeleniumTesting.log.error(
                         'Una de las carpetas no se localiza, se intentara ingresar nuevamente')
                     SeleniumTesting.log.error('error: {}'.format(e.msg))
-                    driver.refresh()
+                    
+                    try:
+                        driver.refresh()
+                    except TimeoutException as e:
+                        SeleniumTesting.log.error('Sucedio error al refrescar pagina')
+                    
                     time.sleep(3)
                 except NoSuchElementException as e:
                     SeleniumTesting.log.error(
                         'Una de las carpetas no se localiza, se intentara ingresar nuevamente')
                     SeleniumTesting.log.error('error: {}'.format(e.msg))
-                    driver.refresh()
+                   
+                    try:
+                        driver.refresh()
+                    except TimeoutException as e:
+                        SeleniumTesting.log.error('Sucedio error al refrescar pagina')
+                    
                     time.sleep(3)
                 except TimeoutException as e:
                     SeleniumTesting.log.error(
