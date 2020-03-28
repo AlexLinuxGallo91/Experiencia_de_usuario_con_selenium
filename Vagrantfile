@@ -48,6 +48,7 @@ Vagrant.configure("2") do |config|
 
     # instala selenium 
     sudo pip3 install selenium
+    sudo pip3 install mysql-connector-python
 
   SHELL
 end
