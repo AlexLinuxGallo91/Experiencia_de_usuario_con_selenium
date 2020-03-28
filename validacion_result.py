@@ -171,9 +171,9 @@ class EvaluacionStepsJson:
         objeto_json['status'] = estatus_global
 
         # Establece el correo concatenandolo en cada ouput en el objeto JSON
-        objeto_json['steps'][0]['output'][0]['output'] += ' : {}'.format(correo.correo)
-        objeto_json['steps'][1]['output'][0]['output'] += ' : {}'.format(correo.correo)
-        objeto_json['steps'][2]['output'][0]['output'] += ' : {}'.format(correo.correo)
+        objeto_json['steps'][0]['output'][0]['name'] += ' : {}'.format(correo.correo)
+        objeto_json['steps'][1]['output'][0]['name'] += ' : {}'.format(correo.correo)
+        objeto_json['steps'][2]['output'][0]['name'] += ' : {}'.format(correo.correo)
 
         return objeto_json
 
