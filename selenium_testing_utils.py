@@ -61,7 +61,7 @@ class SeleniumTesting:
         perfil_firefox.accept_untrusted_certs = True
         perfil_firefox.assume_untrusted_cert_issuer = False
 
-        opciones_firefox.headless = True
+        opciones_firefox.headless = False
 
         return webdriver.Firefox(executable_path=path_driver,
                                  firefox_options=opciones_firefox,
@@ -224,7 +224,7 @@ class SeleniumTesting:
                         mensaje_error_de_credenciales.get_attribute('innerHTML')))
                     resultado.mensaje_error = 'No se puede ingresar al portal. Error de credenciales'
                     resultado.validacion_correcta = False
-                elif SeleniumTesting.owa_descubierto == 2016:
+                elif SeleniumTesting.owa_descubierto == 2016 or SeleniumTesting.owa_descubierto == 2013:
                     mensaje_error_de_credenciales = driver.execute_script(
                     '''
                     var mensaje_error = document.querySelector("#signInErrorDiv").innerText;
@@ -324,9 +324,12 @@ class SeleniumTesting:
         # _n_C4 => OWA 2016 Clase CSS
 
         clase_css_carpeta_owa_2016 = "_n_C4"
+        clase_css_carpeta_owa_2013 = '_n_Z6'
         xpath_carpeta_owa_2010 = "//*[@id='spnFldrNm']"
 
+        # verifica que owa es con respecto a las clases que contienen los divs y span de las carpetas
         if SeleniumTesting.verificar_elemento_encontrado_por_clase_js(driver, clase_css_carpeta_owa_2016):
+            SeleniumTesting.owa_descubierto = 2016
             SeleniumTesting.log.info('Obteniendo carpetas del owa 2016')
 
             script_js = '''
@@ -334,7 +337,17 @@ class SeleniumTesting:
                         return elementos;
                         '''
             lista_de_carpetas_localizadas = driver.execute_script(script_js)
+        elif SeleniumTesting.verificar_elemento_encontrado_por_clase_js(driver, clase_css_carpeta_owa_2013):
+            SeleniumTesting.owa_descubierto = 2013
+            SeleniumTesting.log.info('Obteniendo carpetas del owa 2013')
+
+            script_js = '''
+                        var elementos = document.getElementsByClassName('_n_Z6');
+                        return elementos;
+                        '''
+            lista_de_carpetas_localizadas = driver.execute_script(script_js)
         elif SeleniumTesting.verificar_elemento_encontrado_por_xpath(driver, xpath_carpeta_owa_2010):
+            SeleniumTesting.owa_descubierto = 2010
             SeleniumTesting.log.info('Obteniendo carpetas del owa 2010')
             time.sleep(4)
             lista_de_carpetas_localizadas = driver.find_elements_by_xpath(
@@ -399,7 +412,6 @@ class SeleniumTesting:
                         elemento_html_carpeta = driver.execute_script(script_click_carpeta)
                         elemento_html_carpeta.click()
                         time.sleep(6)
-
                     elif SeleniumTesting.owa_descubierto == 2010:
                         elemento_html_carpeta = driver.find_element_by_xpath('//span[@id="spnFldrNm"][@fldrnm="{}"]'.format(carpeta))
                         time.sleep(3)
@@ -423,38 +435,30 @@ class SeleniumTesting:
                         'Una de las carpetas no se localiza, se intentara ingresar nuevamente')
                     SeleniumTesting.log.error('error: {}'.format(e.msg))
                     
-                    try:
-                        driver.refresh()
-                    except TimeoutException as e:
-                        SeleniumTesting.log.error('Sucedio error al refrescar pagina')
-                    
+                    driver.refresh()
+                    SeleniumTesting.log.error('Sucedio error al refrescar pagina')
                     time.sleep(3)
                 except ElementClickInterceptedException as e:
                     SeleniumTesting.log.error(
                         'Una de las carpetas no se localiza, se intentara ingresar nuevamente')
                     SeleniumTesting.log.error('error: {}'.format(e.msg))
                     
-                    try:
-                        driver.refresh()
-                    except TimeoutException as e:
-                        SeleniumTesting.log.error('Sucedio error al refrescar pagina')
-                    
+                    driver.refresh()
+                    SeleniumTesting.log.error('Sucedio error al refrescar pagina')
                     time.sleep(3)
                 except NoSuchElementException as e:
                     SeleniumTesting.log.error(
                         'Una de las carpetas no se localiza, se intentara ingresar nuevamente')
                     SeleniumTesting.log.error('error: {}'.format(e.msg))
                    
-                    try:
-                        driver.refresh()
-                    except TimeoutException as e:
-                        SeleniumTesting.log.error('Sucedio error al refrescar pagina')
-                    
+                    driver.refresh()
+                    SeleniumTesting.log.error('Sucedio error al refrescar pagina')
                     time.sleep(3)
                 except TimeoutException as e:
                     SeleniumTesting.log.error(
                         'Se presenta error de tiempo de carga en la pagina, se intentara nuevamente')
                     SeleniumTesting.log.error('error: {}'.format(e.msg))
+                    driver.refresh()
                     time.sleep(3)
                 except WebDriverException as e:
                     SeleniumTesting.log.error(
@@ -522,9 +526,20 @@ class SeleniumTesting:
                     var boton_cierre_sesion = document.evaluate('//span[text()="Cerrar sesi\u00f3n"]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
                     boton_cierre_sesion.click();
                 ''')
+            elif SeleniumTesting.owa_descubierto == 2013:
+                driver.execute_script('''
+                    document.querySelector('div._hl_d').click();
+                ''')
+
+                time.sleep(2)
+
+                driver.execute_script('''
+                    var boton_cierre_sesion = document.evaluate('//span[text()="Cerrar sesi\u00f3n"]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                    boton_cierre_sesion.click();
+                ''')
 
             # obtiene la url actual como una cadena
-            time.sleep(2)
+            time.sleep(4)
             url_actual = driver.current_url
             SeleniumTesting.log.info('Se cierra la sesion, estando en la url actual: {}'.format(url_actual))
 
@@ -555,6 +570,10 @@ class SeleniumTesting:
             resultado_cierre_sesion.mensaje_error = constantes_json.OUTPUT_EXITOSO_3_1
             resultado_cierre_sesion.validacion_correcta = True
         elif 'outlook.correoexchange.com.mx/owa/auth/logon.aspx' in url_actual:
+            SeleniumTesting.log.info('Se cierra con exito la sesion')
+            resultado_cierre_sesion.mensaje_error = constantes_json.OUTPUT_EXITOSO_3_1
+            resultado_cierre_sesion.validacion_correcta = True
+        elif 'outlook.correoexchange.mx/owa/auth/logon.aspx' in url_actual:
             SeleniumTesting.log.info('Se cierra con exito la sesion')
             resultado_cierre_sesion.mensaje_error = constantes_json.OUTPUT_EXITOSO_3_1
             resultado_cierre_sesion.validacion_correcta = True
