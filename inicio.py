@@ -79,7 +79,7 @@ def generar_test_json(driver, url_a_navegar, correo):
     lista_validaciones = SeleniumTesting.cerrar_sesion(driver, lista_validaciones)
 
     # establece los datos en el json con los resultados de cada una de las validaciones
-    objeto_json = EvaluacionStepsJson.formar_cuerpo_json(lista_validaciones, objeto_json)
+    objeto_json = EvaluacionStepsJson.formar_cuerpo_json(lista_validaciones, objeto_json, correo)
 
     return objeto_json
 

@@ -138,7 +138,7 @@ class EvaluacionStepsJson:
 
     
     @staticmethod
-    def formar_cuerpo_json(result_list, objeto_json):
+    def formar_cuerpo_json(result_list, objeto_json, correo):
         
         # se establece el tiempo final de ejecucion
         objeto_json = EvaluacionStepsJson.establecer_tiempo_de_finalizacion(objeto_json)
@@ -169,6 +169,11 @@ class EvaluacionStepsJson:
             objeto_json['steps'][1]['status'] and objeto_json['steps'][2]['status']
 
         objeto_json['status'] = estatus_global
+
+        # Establece el correo concatenandolo en cada ouput en el objeto JSON
+        objeto_json['steps'][0]['output'][0]['output'] += ' : {}'.format(correo.correo)
+        objeto_json['steps'][1]['output'][0]['output'] += ' : {}'.format(correo.correo)
+        objeto_json['steps'][2]['output'][0]['output'] += ' : {}'.format(correo.correo)
 
         return objeto_json
 
