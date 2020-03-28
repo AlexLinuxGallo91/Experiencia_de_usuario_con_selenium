@@ -195,7 +195,7 @@ class SeleniumTesting:
             time.sleep(1)
             boton_ingreso_correo.send_keys(Keys.RETURN)
 
-            time.sleep(8)
+            time.sleep(16)
         except NoSuchElementException as e:
             resultado.mensaje_error = 'No fue posible ingresar al portal, no se encontraron los inputs para credenciales: {}'.format(
                 e.msg)
@@ -336,6 +336,7 @@ class SeleniumTesting:
             lista_de_carpetas_localizadas = driver.execute_script(script_js)
         elif SeleniumTesting.verificar_elemento_encontrado_por_xpath(driver, xpath_carpeta_owa_2010):
             SeleniumTesting.log.info('Obteniendo carpetas del owa 2010')
+            time.sleep(4)
             lista_de_carpetas_localizadas = driver.find_elements_by_xpath(
                 xpath_carpeta_owa_2010)
         else:
@@ -400,9 +401,7 @@ class SeleniumTesting:
                         time.sleep(6)
 
                     elif SeleniumTesting.owa_descubierto == 2010:
-                        elemento_html_carpeta = driver.find_element_by_xpath(
-                            '//span[@id="spnFldrNm"][@fldrnm="{}"]'.format(carpeta))
-
+                        elemento_html_carpeta = driver.find_element_by_xpath('//span[@id="spnFldrNm"][@fldrnm="{}"]'.format(carpeta))
                         time.sleep(3)
                         SeleniumTesting.verificar_dialogo_de_interrupcion(
                             driver, result_navegacion_carpetas)
@@ -436,6 +435,11 @@ class SeleniumTesting:
                         'Una de las carpetas no se localiza, se intentara ingresar nuevamente')
                     SeleniumTesting.log.error('error: {}'.format(e.msg))
                     driver.refresh()
+                    time.sleep(3)
+                except TimeoutException as e:
+                    SeleniumTesting.log.error(
+                        'Se presenta error de tiempo de carga en la pagina, se intentara nuevamente')
+                    SeleniumTesting.log.error('error: {}'.format(e.msg))
                     time.sleep(3)
 
         result_navegacion_carpetas.finalizar_tiempo_de_ejecucion()
