@@ -31,28 +31,23 @@ Vagrant.configure("2") do |config|
     wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz
     sudo tar -xf geckodriver-v0.26.0-linux64.tar.gz
 
+    # instala firefox version 64
+    cd ~
+    wget https://ftp.mozilla.org/pub/firefox/releases/64.0/linux-x86_64/en-US/firefox-64.0.tar.bz2
+    tar -xjf firefox-64.0.tar.bz2
+    sudo su
+    sudo mv firefox /opt/
+
     # descarga el driver de chrome
     sudo apt-get install -y unzip
     sudo mkdir /usr/bin/webdrivers
     wget https://chromedriver.storage.googleapis.com/79.0.3945.36/chromedriver_linux64.zip
     sudo unzip chromedriver_linux64.zip
     sudo rm -fr chromedriver_linux64.zip
+    sudo ln -s /opt/firefox/firefox /usr/bin/firefox
 
     # instala selenium 
     sudo pip3 install selenium
-
-    # instala el conector de mysql para python 
-    sudo pip3 install mysql-connector-python
-
-    # instala MYSQL 
-    # debconf-set-selections <<< 'mysql-server mysql-server/root_password password root'
-    # debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password root'
-    # apt-get update
-    # apt-get install -y mysql-server
-
-    # ejecuta el script de python (ETL) para la creacion de la base, tabla e insercion de datos
-    # cd /vagrant_data
-    # python3 insercion_datos_mysql.py
 
   SHELL
 end
