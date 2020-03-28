@@ -456,6 +456,11 @@ class SeleniumTesting:
                         'Se presenta error de tiempo de carga en la pagina, se intentara nuevamente')
                     SeleniumTesting.log.error('error: {}'.format(e.msg))
                     time.sleep(3)
+                except WebDriverException as e:
+                    SeleniumTesting.log.error(
+                        'Se presenta error del webdriver')
+                    SeleniumTesting.log.error('error: {}'.format(e.msg))
+                    time.sleep(3)
 
         result_navegacion_carpetas.finalizar_tiempo_de_ejecucion()
         result_navegacion_carpetas.establecer_tiempo_de_ejecucion()
