@@ -61,7 +61,7 @@ class SeleniumTesting:
         perfil_firefox.accept_untrusted_certs = True
         perfil_firefox.assume_untrusted_cert_issuer = False
 
-        opciones_firefox.headless = False
+        opciones_firefox.headless = True
 
         return webdriver.Firefox(executable_path=path_driver,
                                  firefox_options=opciones_firefox,
